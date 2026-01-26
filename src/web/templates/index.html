@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if theme == 'dark' %}dark{% endif %}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manyfold Processor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+
+        async function updateSettings(payload) {
+            const response = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            console.log("Settings updated:", data);
+        }
+
+        async function processFile(filename) {
+            if (!confirm('Process ' + filename + '?')) return;
+            const response = await fetch('/api/process/' + encodeURIComponent(filename), { method: 'POST' });
+            const data = await response.json();
+            if (data.status === 'success') {
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        }
+
+        async function processAll() {
+            if (!confirm('Process all pending files?')) return;
+            const response = await fetch('/api/process/all', { method: 'POST' });
+            const data = await response.json();
+            // Reload to show them gone/processing
+            setTimeout(() => location.reload(), 500);
+        }
+
+        function toggleAutoProcess(checkbox) {
+            updateSettings({ auto_process: checkbox.checked });
+        }
+
+        function changeTheme(select) {
+            const theme = select.value;
+            updateSettings({ theme: theme });
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-200">
+    <nav class="bg-blue-600 dark:bg-blue-800 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Manyfold Processor</h1>
+
+            <div class="flex items-center space-x-6">
+                <!-- Theme Selector -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm opacity-80">Theme:</span>
+                    <select onchange="changeTheme(this)" class="text-black text-sm rounded p-1">
+                        <option value="light" {% if theme=='light' %}selected{% endif %}>Light</option>
+                        <option value="dark" {% if theme=='dark' %}selected{% endif %}>Dark</option>
+                    </select>
+                </div>
+
+                <!-- Auto Process -->
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm opacity-80">Auto-Process:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" class="sr-only peer" onchange="toggleAutoProcess(this)" {% if
+                            auto_process %}checked{% endif %}>
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-500">
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <h3 class="text-gray-500 dark:text-gray-400 text-sm font-medium">Staging Queue</h3>
+                <p class="text-3xl font-bold dark:text-white">{{ queue_count }}</p>
+                <p class="text-xs text-green-500 mt-1">Pending Review</p>
+            </div>
+        </div>
+
+        <!-- Queue List -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 class="text-lg font-semibold text-gray-800 dark:text-white">Review Queue</h2>
+            </div>
+            <div class="p-6">
+                {% if queue_count == 0 %}
+                <p class="text-gray-500 dark:text-gray-400 text-center">No items in staging.</p>
+                {% else %}
+                <div class="mb-4 flex justify-end">
+                    <button onclick="processAll()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        Process Loose Files
+                    </button>
+                </div>
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Filename</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Type</th>
+                            <th
+                                class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {% for file in staging_files %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{
+                                file }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {% if file.endswith('.stl') %}Loose Model
+                                {% elif file.endswith('.3mf') %}3MF Project
+                                {% elif file.endswith('.zip') or file.endswith('.7z') or file.endswith('.rar')
+                                %}Compressed Archive
+                                {% elif file.endswith('.jpg') or file.endswith('.png') or file.endswith('.jpeg') or
+                                file.endswith('.webp') %}Loose Image
+                                {% elif '.' not in file %}Folder
+                                {% else %}Loose File{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                {% if file.endswith('.3mf') or file.endswith('.zip') or file.endswith('.7z') or
+                                file.endswith('.rar') or '.' not in file %}
+                                <button onclick="processFile('{{ file }}')"
+                                    class="text-blue-600 dark:text-blue-400 hover:text-blue-900 font-bold">Process</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

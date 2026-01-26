@@ -1,0 +1,140 @@
+import time
+import os
+import threading
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import logging
+
+logger = logging.getLogger("watchdog_service")
+
+# Time to wait for no new events before processing (seconds)
+SETTLE_DELAY = 5.0 
+
+class DebounceHandler(FileSystemEventHandler):
+    def __init__(self, service):
+        self.service = service
+
+    def _register(self, filepath):
+        filename = os.path.basename(filepath)
+        if filename.startswith('.'): return
+        
+        logger.info(f"Event detected: {filename} (Debouncing...)")
+        self.service.register_event(filepath)
+
+    def on_created(self, event):
+        if not event.is_directory:
+            self._register(event.src_path)
+
+    def on_moved(self, event):
+        if not event.is_directory:
+            self._register(event.dest_path)
+            
+    def on_modified(self, event):
+        # Optional: track modifications if files are written slowly
+        if not event.is_directory:
+            self._register(event.src_path)
+
+class WatchdogService:
+    def __init__(self, manager, input_dir="/input"):
+        self.manager = manager
+        self.input_dir = input_dir
+        self.observer = Observer()
+        self.handler = DebounceHandler(self)
+        
+        # Debounce state
+        self.pending_files = {} # {filepath: last_seen_time}
+        self.lock = threading.Lock()
+        self.running = False
+        self.worker_thread = None
+
+    def register_event(self, filepath):
+        with self.lock:
+            self.pending_files[filepath] = time.time()
+
+    def _process_loop(self):
+        """Background thread to check for settled files"""
+        while self.running:
+            time.sleep(0.5)
+            
+            now = time.time()
+            settled_files = []
+            
+            with self.lock:
+                # Identify files that haven't changed for SETTLE_DELAY
+                keys = list(self.pending_files.keys())
+                for filepath in keys:
+                    last_seen = self.pending_files[filepath]
+                    if now - last_seen > SETTLE_DELAY:
+                        settled_files.append(filepath)
+                        del self.pending_files[filepath]
+            
+            # Process settled files outside the lock
+            # Sort them: Models first (essential for grouping)
+            def sort_key(f):
+                ext = os.path.splitext(f)[1].lower()
+                return 0 if ext in ['.stl', '.3mf', '.zip'] else 1
+            
+            settled_files.sort(key=sort_key)
+            
+            for filepath in settled_files:
+                # Check if file still exists (wasn't deleted during debounce)
+                if os.path.exists(filepath):
+                    logger.info(f"File settled, processing: {os.path.basename(filepath)}")
+                    try:
+                        self.manager.handle_event(filepath)
+                    except Exception as e:
+                        logger.error(f"Error processing settled file {filepath}: {e}")
+
+    def start(self):
+        if not os.path.exists(self.input_dir):
+            logger.warning(f"Input directory {self.input_dir} does not exist. Creating it.")
+            os.makedirs(self.input_dir, exist_ok=True)
+
+        # 2. Start Worker Thread
+        self.running = True
+        self.worker_thread = threading.Thread(target=self._process_loop, daemon=True)
+        self.worker_thread.start()
+
+        # 3. Start Startup Scan in Background
+        startup_thread = threading.Thread(target=self._startup_scan, daemon=True)
+        startup_thread.start()
+
+    def _startup_scan(self):
+        """Scans input directory for existing files and queues them"""
+        logger.info("Performing startup scan of input directory...")
+        startup_files = []
+        try:
+            for root, dirs, files in os.walk(self.input_dir):
+                for filename in files:
+                    if filename.startswith('.'): continue
+                    startup_files.append(os.path.join(root, filename))
+        except Exception as e:
+            logger.error(f"Error during startup scan: {e}")
+
+        # Sort and process startup files
+        def sort_key(f):
+            ext = os.path.splitext(f)[1].lower()
+            return 0 if ext in ['.stl', '.3mf', '.zip'] else 1
+        startup_files.sort(key=sort_key)
+        
+        for filepath in startup_files:
+             logger.info(f"files found during startup: {os.path.basename(filepath)}")
+             # We assume they are settled, but to be safe and reuse logic, 
+             # we could just register them? No, handle_event directly if we trust them.
+             # But handle_event blocks. We are in a thread now, so it's fine!
+             try:
+                self.manager.handle_event(filepath)
+             except Exception as e:
+                logger.error(f"Error processing startup file {filepath}: {e}")
+
+        # 3. Start Real-time Monitoring
+        self.observer.schedule(self.handler, self.input_dir, recursive=True)
+        self.observer.start()
+        logger.info(f"Watchdog observing: {self.input_dir} (Recursive=True, Debounce={SETTLE_DELAY}s)")
+    
+    def stop(self):
+        self.running = False
+        self.observer.stop()
+        self.observer.join()
+        if self.worker_thread:
+            self.worker_thread.join(timeout=2.0)

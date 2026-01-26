@@ -1,1 +1,16 @@
-Project_Context.md
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+venv/
+.venv/
+*.log
+.DS_Store
+
+# Docker
+.dockerignore
+
+# Local Testing
+playground/
