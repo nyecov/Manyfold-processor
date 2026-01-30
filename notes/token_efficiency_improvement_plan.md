@@ -22,7 +22,7 @@ Convert remaining manual workflows to headless Rust scripts.
 
 ---
 
-## Phase 1.5: Root Workflow Optimization (HIGH PRIORITY)
+## Phase 1.5: Root Workflow Optimization (HIGH PRIORITY) ✅ DONE
 
 ### Problem Statement
 
@@ -306,23 +306,42 @@ Add to Tool Catalog:
 
 ---
 
-## Phase 2: Unified CLI (Medium Priority)
+## Phase 2: Shared Library Refactor (Medium Priority)
+
+### Problem
+Currently, each binary (`src/bin/*.rs`) duplicates common logic:
+- File reading & walking directories
+- Parsing `Cargo.toml`, YAML, or Markdown
+- Reporting formats (JSON/Text)
 
 ### Goal
-Consolidate all audit binaries into a single CLI tool.
+Refactor common logic into a shared `src/lib.rs` while keeping **Atomic Binaries**.
 
-```bash
-# Before (4 commands)
-.agent/tools/target/release/audit_dependencies.exe
-.agent/tools/target/release/check_links.exe
-.agent/tools/target/release/check_gherkin.exe
+### Architecture
+*   `src/lib.rs` (`agent_tools` crate):
+    *   `pub mod fs`: Robust file reading, `WalkDir` wrappers.
+    *   `pub mod parser`: Common regex/parsing logic for frontmatter, links.
+    *   `pub mod report`: Standardized output (Pass/Fail/Warn) and error handling.
+*   `src/bin/*.rs`:
+    *   Thin wrappers that import `agent_tools::*` and run specific logic.
 
-# After (1 command)
-.agent/tools/target/release/agent-audit --all
-.agent/tools/target/release/agent-audit --deps --links
-```
+### Benefits
+1.  **DRY (Don't Repeat Yourself)**: Fix a bug in file reading once, update all tools.
+2.  **Consistency**: All tools will output identical `[PASS]`/`[FAIL]` formats.
+3.  **Atomicity Preserved**: Workflows still call specific `.exe` files.
 
-**Benefits**: Simpler invocation, shared code, easier maintenance.
+### Implementation Checklist
+- [x] Create `src/lib.rs`
+- [x] Move `walkdir`, `fs` helpers to `lib.rs`
+- [x] Define `AuditResult` struct in `lib.rs` for standardized reporting
+- [x] Refactor `audit_dependencies` to use lib
+- [x] Refactor `check_links` to use lib
+- [x] Refactor `check_gherkin` to use lib
+- [x] Refactor remaining tools (`check_context`, `check_constants`, `check_infrastructure`, `check_workflow_skip`)
+
+### Token Savings
+*   **Indirect**: Smaller binaries, less code for Agent to read if it needs to inspect source.
+*   **Maintenance**: Cheaper for Agent to fix bugs (1 file vs 8).
 
 ---
 

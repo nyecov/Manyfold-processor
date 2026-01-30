@@ -1,36 +1,23 @@
-use std::fs;
+use agent_tools::prelude::*;
 use std::process::Command;
-use walkdir::WalkDir;
 use std::collections::HashMap;
 
 /// Parses workflow files for dependency comments and checks git status.
-/// 
-/// Comment format in workflows:
-///   <!-- depends: .agent/skills/agentic_philosophy -->
-///   <!-- depends: docs/Agentic_Philosophy.md -->
-///   <!-- depends: .agent/tools/src/bin/check_gherkin.rs -->
-///
-/// Output:
-///   [SKIP] workflow_name - No dependencies changed
-///   [RUN]  workflow_name - Dependencies modified: path1, path2
 fn main() {
     println!("[AUDIT] Checking Workflow Skip Conditions...");
     
     let workflows_dir = ".agent/workflows";
     let mut results: HashMap<String, Vec<String>> = HashMap::new();
     
-    // Parse all workflow files for depends comments
-    for entry in WalkDir::new(workflows_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.path().extension().map_or(false, |ext| ext == "md"))
-    {
-        let path = entry.path();
-        let workflow_name = path.file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("unknown");
+    if exists(workflows_dir) {
+        let files = find_files(workflows_dir, "md");
         
-        if let Ok(content) = fs::read_to_string(path) {
+        for path in files {
+            let workflow_name = path.file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("unknown");
+            
+            let content = read_to_string_lossy(&path);
             let mut dependencies: Vec<String> = Vec::new();
             
             // Extract <!-- depends: path --> comments
@@ -103,7 +90,6 @@ fn main() {
     println!("---");
     println!("Summary: {} workflows to SKIP, {} workflows need to RUN", skip_count, run_count);
     
-    // Exit with 0 if all can be skipped, 1 if any need to run
     if run_count > 0 {
         std::process::exit(1);
     } else {

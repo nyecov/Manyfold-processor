@@ -1,67 +1,38 @@
-use std::fs;
-use std::collections::HashMap;
-use walkdir::WalkDir;
+use agent_tools::prelude::*;
 
-/// Checks skill organization: large files, missing docs, orphaned skills
 fn main() {
-    let mut errors = 0;
-    let mut warnings = 0;
-    println!("[AUDIT] Checking Skill Context Organization...");
-
+    let mut audit = AuditResult::new("Context Check");
     let skills_dir = ".agent/skills";
     let annex_dir = ".agent/annex";
     
-    // 1. Check skill sizes (flag if >200 lines = too broad)
-    for entry in WalkDir::new(skills_dir)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_name().to_str() == Some("SKILL.md"))
-    {
-        let path = entry.path();
-        if let Ok(content) = fs::read_to_string(path) {
-            let line_count = content.lines().count();
-            if line_count > 200 {
-                println!("[XX] {} -> Too broad ({} lines, max 200)", 
-                    path.display(), line_count);
-                errors += 1;
-            } else if line_count > 150 {
-                println!("[WW] {} -> Consider splitting ({} lines)", 
-                    path.display(), line_count);
-                warnings += 1;
-            }
+    // 1. Check skill sizes (SKILL.md only)
+    let files = find_files(skills_dir, "md");
+    for path in files {
+        if path.file_name().map_or(false, |n| n == "SKILL.md") {
+             let content = read_to_string_lossy(&path);
+             let line_count = content.lines().count();
+             if line_count > 200 {
+                 audit.fail(&format!("{} -> Too broad ({} lines, max 200)", path.display(), line_count));
+             } else if line_count > 150 {
+                 audit.warn(&format!("{} -> Consider splitting ({} lines)", path.display(), line_count));
+             }
         }
     }
-
-    // 2. Check for skills without descriptions
-    for entry in WalkDir::new(skills_dir)
-        .min_depth(1)
-        .max_depth(1)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_dir())
-    {
-        let skill_file = entry.path().join("SKILL.md");
+    
+    // 2. Check for skills without descriptions (Missing SKILL.md)
+    let dirs = list_immediate_subdirs(skills_dir);
+    for dir in dirs {
+        let skill_file = dir.join("SKILL.md");
         if !skill_file.exists() {
-            println!("[XX] {} -> Missing SKILL.md", entry.path().display());
-            errors += 1;
+            audit.fail(&format!("{} -> Missing SKILL.md", dir.display()));
         }
     }
-
+    
     // 3. Check annex has README
-    let annex_readme = format!("{}/README.md", annex_dir);
-    if !std::path::Path::new(&annex_readme).exists() {
-        println!("[XX] {} -> Missing README.md", annex_dir);
-        errors += 1;
+    let annex_readme = std::path::Path::new(annex_dir).join("README.md");
+    if !annex_readme.exists() {
+        audit.fail(&format!("{} -> Missing README.md", annex_dir));
     }
-
-    if errors == 0 && warnings == 0 {
-        println!("[OK] Skill Context Organization Valid");
-        std::process::exit(0);
-    } else if errors == 0 {
-        println!("[WW] {} warnings (no errors)", warnings);
-        std::process::exit(0);
-    } else {
-        println!("[XX] Found {} errors, {} warnings", errors, warnings);
-        std::process::exit(1);
-    }
+    
+    audit.print_and_exit();
 }

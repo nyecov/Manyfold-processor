@@ -10,8 +10,8 @@
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{fs, path::Path, process::exit};
-use walkdir::WalkDir;
+use std::{fs as std_fs, path::Path, process::exit};
+use agent_tools::fs;
 
 const CACHE_PATH: &str = ".agent/tools/.audit_cache";
 
@@ -68,52 +68,43 @@ fn compute_content_hash() -> String {
     let mut files_hashed = 0;
 
     // 1. Hash all tool source files (sorted for determinism)
-    let bin_path = Path::new(".agent/tools/src/bin");
-    if bin_path.exists() {
-        let mut rs_files: Vec<_> = WalkDir::new(bin_path)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "rs"))
-            .map(|e| e.path().to_path_buf())
-            .collect();
+    let bin_path = ".agent/tools/src/bin";
+    if fs::exists(bin_path) {
+        let mut rs_files = fs::find_files(bin_path, "rs");
         rs_files.sort();
 
         for file in rs_files {
-            if let Ok(content) = fs::read_to_string(&file) {
-                hasher.update(content.as_bytes());
-                files_hashed += 1;
-            }
+            let content = fs::read_to_string_lossy(&file);
+            hasher.update(content.as_bytes());
+            files_hashed += 1;
         }
     }
     println!("Hashed {} Rust source files", files_hashed);
 
     // 2. Hash Cargo.toml (dependency changes matter)
     let cargo_path = Path::new(".agent/tools/Cargo.toml");
-    if let Ok(content) = fs::read_to_string(cargo_path) {
+    let content = fs::read_to_string_lossy(cargo_path);
+    if !content.is_empty() {
         hasher.update(content.as_bytes());
         println!("Hashed Cargo.toml");
     }
 
     // 3. Hash workflows that reference tools (sorted for determinism)
-    let workflows_path = Path::new(".agent/workflows");
+    let workflows_path = ".agent/workflows";
     let mut workflow_count = 0;
-    if workflows_path.exists() {
-        let mut workflow_files: Vec<_> = WalkDir::new(workflows_path)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "md"))
-            .filter_map(|e| {
-                let content = fs::read_to_string(e.path()).ok()?;
-                if content.contains(".agent\\tools\\")
-                    || content.contains(".agent/tools/")
-                    || content.contains("Headless")
-                {
-                    Some((e.path().to_path_buf(), content))
-                } else {
-                    None
-                }
-            })
-            .collect();
+    if fs::exists(workflows_path) {
+        let md_files = fs::find_files(workflows_path, "md");
+        let mut workflow_files = Vec::new();
+        
+        for path in md_files {
+            let content = fs::read_to_string_lossy(&path);
+            if content.contains(".agent\\tools\\")
+                || content.contains(".agent/tools/")
+                || content.contains("Headless")
+            {
+                workflow_files.push((path, content));
+            }
+        }
         workflow_files.sort_by(|a, b| a.0.cmp(&b.0));
 
         for (_, content) in workflow_files {
@@ -127,7 +118,7 @@ fn compute_content_hash() -> String {
 }
 
 fn read_cache() -> Option<AuditCache> {
-    let content = fs::read_to_string(CACHE_PATH).ok()?;
+    let content = std_fs::read_to_string(CACHE_PATH).ok()?;
     serde_yaml::from_str(&content).ok()
 }
 
@@ -144,5 +135,5 @@ fn write_cache(result: &str, findings: Vec<String>) -> std::io::Result<()> {
         findings,
     };
     let yaml = serde_yaml::to_string(&cache).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-    fs::write(CACHE_PATH, yaml)
+    std_fs::write(CACHE_PATH, yaml)
 }

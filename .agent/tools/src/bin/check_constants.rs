@@ -1,14 +1,15 @@
-use std::fs;
-use walkdir::WalkDir;
+use agent_tools::prelude::*;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct Constants {
     memory: MemoryConfig,
     network: NetworkConfig,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct MemoryConfig {
     reservation: String,
     limit: String,
@@ -16,6 +17,7 @@ struct MemoryConfig {
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct NetworkConfig {
     radxa_ip: String,
     ssh_user: String,
@@ -23,12 +25,9 @@ struct NetworkConfig {
     web_ui_port: u16,
 }
 
-/// Checks for hardcoded magic values that should use constants.yml
 fn main() {
-    let mut errors = 0;
-    println!("[AUDIT] Checking for Hardcoded Constants...");
+    let mut audit = AuditResult::new("Constants Check");
 
-    // Magic values that should be in constants.yml
     let magic_values = [
         "192.168.2.2",  // radxa_ip
         "memory: 1G",   // reservation (in compose)
@@ -36,16 +35,13 @@ fn main() {
     ];
 
     let targets = [".agent/skills", "docs", "notes"];
-    let exclude = ".agent/constants.yml";
-    let exclude_env = ".agent/skills/environment_constraints";
 
     for target in targets {
-        for entry in WalkDir::new(target)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.path().extension().map_or(false, |ext| ext == "md" || ext == "yml"))
-        {
-            let path = entry.path();
+        // Need both md and yml files
+        let mut files = find_files(target, "md");
+        files.extend(find_files(target, "yml"));
+        
+        for path in files {
             let path_str = path.to_string_lossy();
             
             // Skip the constants.yml itself and environment_constraints
@@ -53,25 +49,17 @@ fn main() {
                 continue;
             }
             
-            if let Ok(content) = fs::read_to_string(path) {
-                for (i, line) in content.lines().enumerate() {
-                    for magic in &magic_values {
-                        if line.contains(magic) {
-                            println!("[XX] {}:{} -> Hardcoded: '{}'", 
-                                path.display(), i + 1, magic);
-                            errors += 1;
-                        }
+            let content = read_to_string_lossy(&path);
+            for (i, line) in content.lines().enumerate() {
+                for magic in &magic_values {
+                    if line.contains(magic) {
+                        audit.fail(&format!("{}:{} -> Hardcoded: '{}'", 
+                            path.display(), i + 1, magic));
                     }
                 }
             }
         }
     }
-
-    if errors == 0 {
-        println!("[OK] No Hardcoded Magic Values Found");
-        std::process::exit(0);
-    } else {
-        println!("[XX] Found {} hardcoded constants (should use constants.yml)", errors);
-        std::process::exit(1);
-    }
+    
+    audit.print_and_exit();
 }
