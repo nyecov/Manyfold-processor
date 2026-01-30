@@ -5,6 +5,8 @@ description: Core architectural principles and system design using the C4 model 
 
 # Instructions
 
+<!-- audited_by: .agent/workflows/audit_infrastructure.md -->
+
 When creating new features, refactoring code, or analyzing the system, use this document to understand the architectural boundaries and responsibilities.
 
 1.  **Language**: **Rust** is the primary language for all application logic. Python may be used only for legacy wrapping or prototyping but should be phased out.

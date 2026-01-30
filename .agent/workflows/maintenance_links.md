@@ -6,30 +6,63 @@ description: Synchronize and update relative links across project skills, workfl
 
 This standalone workflow maintains the integrity of the "web of knowledge" by ensuring all internal links are relative and functional.
 
-> [!IMPORTANT]
-> **Headless First Protocol**: Run the token-efficient script before manual analysis.
-
-## 0. Headless Execution (Preferred)
-```powershell
-.agent\tools\target\release\check_links.exe
-```
-*   **If `[OK]`**: Report pass, skip manual steps.
-*   **If `[XX]`**: Proceed to manual analysis below to fix violations.
+<!-- depends: .agent/skills/kb_linking/SKILL.md -->
+<!-- depends: .agent/workflows -->
+<!-- depends: docs -->
+<!-- depends: notes -->
+<!-- depends: .agent/tools/src/bin/check_links.rs -->
 
 ---
 
-## 1. Inventory (Manual Fallback)
-*   List all markdown files in `.agent/`, `docs/`, `notes/`, and `tests/`.
+## Execution Protocol
 
-## 2. Scan & Update
-*   Identify mentions of skill names or document titles without links.
-*   **Mandate**: Convert all absolute paths to **relative paths**.
-*   Verify that links follow the vertical, lateral, or contextual logic defined in `kb_linking`.
+> [!NOTE]
+> **Hybrid Mode**: This workflow uses both headless scripts (🔧) and agent analysis (🧠).
 
-## 3. Enrichment
-*   Add lateral links between peer skills (e.g., `3mf_specification` <-> `stl_specification`).
+### 🔧 Step 1: Headless Absolute Path Detection
+```powershell
+.agent\tools\target\release\check_links.exe
+```
+**Covers**: Absolute paths (`C:/`, `/home/`, `file:///`)
+
+*   **If `[OK]`**: Proceed to Agent steps.
+*   **If `[XX]`**: Convert to relative paths, then proceed.
+
+---
+
+### 🧠 Step 2: Broken Link Detection (AGENT-ONLY)
+> Script cannot do this — requires checking if link targets exist.
+
+*   Scan all markdown links.
+*   Verify each target file exists.
+*   **Action**: Fix or remove broken links.
+
+---
+
+### 🧠 Step 3: Link Enrichment (AGENT-ONLY)
+> Script cannot do this — requires semantic understanding of relationships.
+
+*   Identify mentions of skill names without links.
+*   Add lateral links between peer skills (e.g., `3mf_specification` ↔ `stl_specification`).
 *   Ensure workflows link to their foundation skills.
+*   **Action**: Add missing links.
 
-## 4. Verification
-*   Check for broken links (pointing to non-existent files) and report them for manual fix or removal.
-*   Batch update using `multi_replace_file_content`.
+---
+
+### 🧠 Step 4: Link Logic Verification (AGENT-ONLY)
+> Script cannot do this — requires understanding linking semantics.
+
+*   Verify links follow vertical, lateral, or contextual logic (per `kb_linking` skill).
+*   Check for orphaned documents with no incoming links.
+*   **Action**: Add appropriate backlinks.
+
+---
+
+## Report
+
+| Finding | Source |
+|---------|--------|
+| Absolute Paths | 🔧 Script |
+| Broken Links | 🧠 Agent |
+| Missing Links | 🧠 Agent |
+| Orphaned Docs | 🧠 Agent |

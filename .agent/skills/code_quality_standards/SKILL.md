@@ -6,6 +6,9 @@ requires: [project_details, agentic_philosophy]
 
 # Code Quality Standards
 
+<!-- audited_by: .agent/workflows/audit_consistency.md -->
+<!-- audited_by: .agent/workflows/audit_code_quality.md -->
+
 This project enforces strict code quality and security standards to ensure long-term maintainability and reliability on hardware.
 
 ## 1. Rust Formatting (`rustfmt`)

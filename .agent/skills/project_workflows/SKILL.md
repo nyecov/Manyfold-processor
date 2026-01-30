@@ -5,6 +5,9 @@ description: Guide to available Antigravity Workflows (Atomics and Suites) for t
 
 # Project Workflows
 
+<!-- audited_by: .agent/workflows/audit_dependencies.md -->
+<!-- audited_by: .agent/workflows/audit_context.md -->
+
 This project utilizes a hierarchical suite of **Atomics** (independent standalones) and **Suites** (orchestrators) to automate maintenance and verification.
 
 ## 🏗️ Workflow Architecture
@@ -23,7 +26,16 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 
 ---
 
-## 🚀 Atomic Standalones (Basics)
+## � Root Workflow (Execute First)
+
+> [!CAUTION]
+> This workflow MUST be executed before any audit or maintenance workflow that uses "Headless First".
+
+*   **`/audit_tool_alignment`**: **[AGENT-ONLY]** Verifies `.agent/tools/` scripts align with workflows. **No downstream workflow is valid until this passes.**
+
+---
+
+## �🚀 Atomic Standalones (Basics)
 
 ### Audit Tools (Passive)
 *   **`/audit_context`**: Evaluates semantic organization (Strategy vs. Reference).
@@ -35,6 +47,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   **`/audit_constants`**: Checks for hardcoded values vs `constants.yml`.
 *   **`/audit_dependencies`**: Validates `requires:` fields in skills.
 *   **`/audit_workflows`**: Governs workflow library integrity and redundancy.
+*   **`/audit_tool_alignment`**: **[AGENT-ONLY]** Meta-audit ensuring tools align with docs/workflows.
 
 ### Maintenance Tools (Active)
 *   **`/maintenance_links`**: Synchronizes relative links across the project.
@@ -63,6 +76,36 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   Always use relative paths in documentation.
 *   Follow the "Strategy vs. Reference" semantic model.
 
+---
+
+## ⚡ Hybrid Mode Tools
+
+Workflows use scripts for **atomic checks** while agents handle **semantic analysis**.
+
+### Binary Registry
+| Tool | Workflow | 🔧 Covers |
+|------|----------|-----------|
+| `audit_dependencies.exe` | `/audit_dependencies` | Broken `requires:` links |
+| `check_gherkin.exe` | `/audit_gherkin` | Scenario count >5 |
+| `check_links.exe` | `/maintenance_links` | Absolute paths |
+| `check_consistency.exe` | `/audit_consistency` | TODOs/TBDs/FIXMEs |
+| `check_constants.exe` | `/audit_constants` | Known magic values |
+| `check_context.exe` | `/audit_context` | File sizes, structure |
+| `check_infrastructure.exe` | `/audit_infrastructure` | compose/Dockerfile presence |
+| `check_workflow_skip.exe` | (Meta) | Git change detection |
+
+### Workflow Format
+```markdown
+### 🔧 Step 1: Headless [Check]
+  → Script output
+
+### 🧠 Step 2: [Analysis] (AGENT-ONLY)
+  → Agent performs semantic analysis
+```
+
+### Key Principle
+> Scripts cover **atomic** steps only. Agent-Only steps are **never skipped** — correctness over efficiency.
+
 ### Feedback Requirements
 > [!IMPORTANT]
 > **Mandatory Feedback**: After completing each atomic step, the agent MUST provide a brief status update to the user:
@@ -77,3 +120,5 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 ## See Also
 *   **Historical Context**: [annex](../../annex/README.md)
 *   **Linking Standards**: [kb_linking](../kb_linking/SKILL.md)
+*   **Agent Tools**: [tools](../../tools/Cargo.toml) — Headless First binaries
+*   **Philosophy**: [agentic_philosophy](../agentic_philosophy/SKILL.md)

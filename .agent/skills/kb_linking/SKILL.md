@@ -7,6 +7,10 @@ requires:
 
 # Knowledge Base Linking Standards
 
+<!-- audited_by: .agent/workflows/audit_dependencies.md -->
+<!-- audited_by: .agent/workflows/audit_consistency.md -->
+<!-- audited_by: .agent/workflows/maintenance_links.md -->
+
 To ensure the project's documentation remains robust, portable, and easily navigable across different environments and AI agent instances, all internal links must adhere to the following standards.
 
 ## 1. The Core Mandate: Relative Paths Only

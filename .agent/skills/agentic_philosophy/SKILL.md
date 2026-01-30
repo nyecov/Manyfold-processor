@@ -6,6 +6,8 @@ requires: [project_details, project_workflows]
 
 # Agentic Engineering Philosophy
 
+<!-- audited_by: .agent/workflows/audit_context.md -->
+
 > "Agentic 'vibecoding' introduces broken logic, missed concepts, and bloat at every step—*even with human supervision*."
 
 This skill codifies the **Defensive Orchestration** paradigm that governs how AI agents interact with this project.
@@ -50,17 +52,24 @@ The `.agent/` folder is not config—it is a **Ghost Operating System** that run
 
 ---
 
-## 💰 Token Efficiency (Hybrid Model)
+## 💰 Token Efficiency (Hybrid Mode)
 
-*   **Workflow (Prompt)**: Manager. Decides *what* to do.
-*   **Script (Tool)**: Worker. Executes *how* to do it efficiently.
+Workflows use a **Hybrid Model** where scripts handle atomic checks and agents handle semantic analysis.
 
-> **Mandate**: Substitute as many recurring processes as possible with locally-running atomic scripts to save tokens. The Agent orchestrates; the Script serves.
+### Workflow Step Types
+| Marker | Type | Cost | Coverage |
+|--------|------|------|----------|
+| 🔧 | Script | ~0 tokens | Atomic, structural checks |
+| 🧠 | Agent-Only | Variable | Semantic, cross-reference analysis |
 
-**Protocol**:
-1.  Run script headless (cheap).
-2.  If fail, re-run with `-v` (expensive but necessary).
-3.  Fallback to manual analysis if scripts are broken.
+### Correctness Over Efficiency
+> **Mandate**: Scripts ONLY substitute atomic steps they can actually perform. Never claim a script covers semantic analysis — correctness trumps token savings.
+
+### Protocol
+1.  Run 🔧 Script step (cheap, ~0 tokens).
+2.  Review script output for atomic findings.
+3.  Proceed to 🧠 Agent steps regardless of script result.
+4.  Agent performs semantic analysis that scripts cannot.
 
 **Location**: All governance scripts reside in `.agent/tools/`.
 
@@ -70,3 +79,4 @@ The `.agent/` folder is not config—it is a **Ghost Operating System** that run
 *   [Project Workflows](../project_workflows/SKILL.md)
 *   [Environment Constraints](../environment_constraints/SKILL.md)
 *   [Testing Philosophy](../testing_philosophy/SKILL.md)
+*   [Agent Tools](../../tools/Cargo.toml) — Rust binaries for token-efficient audits

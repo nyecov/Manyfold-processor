@@ -6,36 +6,51 @@ description: validate `requires:` frontmatter and skill dependency links.
 
 This standalone workflow validates the explicit dependency graph defined in skill frontmatter.
 
-> [!IMPORTANT]
-> **Headless First Protocol**: Run the token-efficient script before manual analysis.
-
-## 0. Headless Execution (Preferred)
-```powershell
-.agent\tools\target\release\audit_dependencies.exe
-```
-*   **If `[OK]`**: Report pass, skip manual steps.
-*   **If `[XX]`**: Proceed to manual analysis below.
+<!-- depends: .agent/skills/project_workflows/SKILL.md -->
+<!-- depends: .agent/skills/kb_linking/SKILL.md -->
+<!-- depends: .agent/tools/src/bin/audit_dependencies.rs -->
 
 ---
 
-## 1. Inventory & Parsing (Manual Fallback)
+## Execution Protocol
+
+> [!NOTE]
+> **Hybrid Mode**: This workflow uses both headless scripts (🔧) and agent analysis (🧠).
+
+### 🔧 Step 1: Headless Integrity Check
+```powershell
+.agent\tools\target\release\audit_dependencies.exe
+```
+**Covers**: Broken `requires:` references (typos, non-existent skills)
+
+*   **If `[OK]`**: Proceed to Agent steps.
+*   **If `[XX]`**: Fix broken references, then proceed.
+
+---
+
+### 🧠 Step 2: Presence Check (AGENT-ONLY)
+> Script cannot do this — requires judgment on which skills genuinely need no dependencies.
+
 *   Scan all `SKILL.md` files.
-*   Parse the YAML frontmatter for the `requires:` block.
+*   Flag any skill that **lacks** a `requires:` block.
+*   **Exception**: Root skills like `project_details` may legitimately have no dependencies.
+*   **Action**: Propose `requires:` additions for flagged skills.
 
-## 2. Validation Checks
+---
 
-### A. Presence Check
-*   Flag any skill that **lacks** a `requires:` block. 
-    *   *Note*: Some root skills (like `project_details`) might genuinely have no dependencies, but most should at least reference `project_details` or `architectural_guidelines`.
+### 🧠 Step 3: Circular Dependency Detection (AGENT-ONLY)
+> Script cannot do this — requires graph traversal with cycle detection.
 
-### B. Integrity Check (Broken Links)
-*   Verify that every skill listed in `requires:` actually exists in `.agent/skills/`.
-*   Flag typos (e.g., `requires: deploy_on_radxa` vs `deploy_on_radxa_rock5`).
+*   Trace the dependency graph (A → B → C → A?).
+*   Flag any cycles that would cause infinite loops.
+*   **Action**: Break cycles by removing or restructuring dependencies.
 
-### C. Circular Dependency Check
-*   (Advanced) Trace the graph to ensure there are no infinite loops (A requires B requires A).
+---
 
-## 3. Report
-*   **Missing Dependencies**: List skills needing `requires:` added.
-*   **Broken Dependencies**: List invalid references.
-*   **Graph Health**: Summary of the dependency web.
+## Report
+
+| Finding | Source |
+|---------|--------|
+| Broken References | 🔧 Script |
+| Missing `requires:` | 🧠 Agent |
+| Circular Dependencies | 🧠 Agent |

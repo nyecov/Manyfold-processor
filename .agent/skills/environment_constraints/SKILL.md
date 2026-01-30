@@ -5,6 +5,9 @@ description: Single source of truth for all resource limits, memory reservations
 
 # Environment Constraints
 
+<!-- audited_by: .agent/workflows/audit_constants.md -->
+<!-- audited_by: .agent/workflows/audit_infrastructure.md -->
+
 This skill is the **canonical source of truth** for all resource limits and environmental parameters. Other skills MUST reference this document rather than duplicating values.
 
 ## 1. Memory Management

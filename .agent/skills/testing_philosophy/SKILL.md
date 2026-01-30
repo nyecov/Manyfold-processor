@@ -6,6 +6,8 @@ requires: [gherkin_style_guide, cucumber_rust_reference, project_details, agenti
 
 # Testing Philosophy: Strategy & Governance
 
+<!-- audited_by: .agent/workflows/audit_gherkin.md -->
+
 The software behavior is governed by a **Dual-Track Verification** strategy, ensuring reliability across both user-facing and internal interfaces.
 
 ## 1. Core Mandates

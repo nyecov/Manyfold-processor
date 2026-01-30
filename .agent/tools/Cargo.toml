@@ -20,3 +20,23 @@ path = "src/bin/check_links.rs"
 [[bin]]
 name = "check_gherkin"
 path = "src/bin/check_gherkin.rs"
+
+[[bin]]
+name = "check_consistency"
+path = "src/bin/check_consistency.rs"
+
+[[bin]]
+name = "check_constants"
+path = "src/bin/check_constants.rs"
+
+[[bin]]
+name = "check_context"
+path = "src/bin/check_context.rs"
+
+[[bin]]
+name = "check_infrastructure"
+path = "src/bin/check_infrastructure.rs"
+
+[[bin]]
+name = "check_workflow_skip"
+path = "src/bin/check_workflow_skip.rs"

@@ -6,40 +6,108 @@ description: Full-spectrum project audit (Docs, Tests, and Systems).
 
 The ultimate verification tool for the Manyfold Processor project.
 
+<!-- depends: .agent/workflows/audit_tool_alignment.md -->
+<!-- depends: .agent/workflows/suite_docs.md -->
+<!-- depends: .agent/workflows/audit_code_quality.md -->
+<!-- depends: .agent/workflows/suite_tests.md -->
+<!-- depends: .agent/workflows/audit_infrastructure.md -->
+<!-- depends: .agent/tools/src/bin/check_workflow_skip.rs -->
+
+---
+
+## Execution Protocol
+
 > [!NOTE]
 > **Feedback Mandate**: After each step, provide a brief status update (✅/❌ + 1-line summary).
 
-## 1. Documentation Review
+---
+
+### 🔧 Step -1: Workflow Skip Detection
+```powershell
+.agent\tools\target\release\check_workflow_skip.exe
+```
+*   Parse output to determine which workflows have unchanged dependencies.
+*   Workflows marked `[SKIP]` can bypass their 🔧 Script steps (agent steps still run).
+*   Workflows marked `[RUN]` proceed with full execution.
+
+**Example Output**:
+```
+[SKIP] audit_gherkin - No dependencies changed
+[RUN]  audit_dependencies - Modified: .agent/skills
+```
+
+---
+
+### 🧠 Step 0: Tool Alignment Check (AGENT-ONLY)
+
+> [!CAUTION]
+> **Prerequisite**: If `.agent/tools/` changed, this MUST run first.
+
+*   Invoke `/audit_tool_alignment`
+*   📢 **Report**: Tool-workflow alignment status
+*   **If FAIL**: Stop. Fix tool alignment before proceeding.
+*   **If `check_workflow_skip` said `[SKIP]` for tools**: Can skip this step.
+
+---
+
+### Step 1: Documentation Review
 *   Invoke `/suite_docs`
 *   📢 **Report**: Doc audit status
+*   🔧 Script steps can be skipped if dependencies unchanged.
+*   🧠 Agent steps always run.
 
-## 2. Quality & Security Review
+---
+
+### Step 2: Quality & Security Review
 *   Invoke `/audit_code_quality`
 *   📢 **Report**: fmt/clippy/audit status
 
-## 3. Testing Review
+---
+
+### Step 3: Testing Review
 *   Invoke `/suite_tests`
 *   📢 **Report**: Test status
+*   🔧 Script steps can be skipped if dependencies unchanged.
+*   🧠 Agent steps always run.
 
-## 4. Systems Review
+---
+
+### Step 4: Systems Review
 *   Invoke `/audit_infrastructure`
 *   📢 **Report**: Infrastructure compliance status
+*   🔧 Script steps can be skipped if dependencies unchanged.
+*   🧠 Agent steps always run.
 
-## 5. Final Health Report
-*   Consolidate all findings into a single high-level risk assessment for the project.
+---
+
+### Step 5: Final Health Report
+*   Consolidate all findings into a single high-level risk assessment.
+*   Generate summary table of 🔧 Script vs 🧠 Agent findings.
+
+---
+
+## Token Efficiency Summary
+
+| Scenario | Tokens |
+|----------|--------|
+| First Run (All Changed) | ~65,000-80,000 |
+| Subsequent Run (Nothing Changed) | ~25,000-40,000 |
+| Targeted Run (Some Changed) | ~40,000-55,000 |
 
 ---
 
 ## Alternative: Hard Orchestration
 
-For deterministic, agent-independent execution, run the shell script:
-```bash
-.agent/tools/scripts/run_full_audit.sh
-```
-
-Or use the compiled Rust binaries:
+For deterministic, agent-independent execution of scripts only:
 ```powershell
+.agent\tools\target\release\check_workflow_skip.exe
 .agent\tools\target\release\audit_dependencies.exe
 .agent\tools\target\release\check_gherkin.exe
 .agent\tools\target\release\check_links.exe
+.agent\tools\target\release\check_consistency.exe
+.agent\tools\target\release\check_constants.exe
+.agent\tools\target\release\check_context.exe
+.agent\tools\target\release\check_infrastructure.exe
 ```
+
+> **Note**: Hard orchestration only runs 🔧 Script steps. 🧠 Agent-Only steps require full workflow execution.

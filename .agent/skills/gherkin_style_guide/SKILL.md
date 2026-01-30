@@ -5,6 +5,8 @@ description: Methodological standards for writing clear, unique, and maintainabl
 
 # Gherkin Style Guide: Standards & Methodology
 
+<!-- audited_by: .agent/workflows/audit_gherkin.md -->
+
 This guide defines the "how" of writing executable specifications to ensure logical clarity and AI readability.
 
 ## 1. Writing Quality Scenarios
