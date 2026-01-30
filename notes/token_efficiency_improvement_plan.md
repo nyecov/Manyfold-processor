@@ -2,7 +2,7 @@
 
 **Created**: 2026-01-30
 **Baseline Commit**: `3395d359ea3464832f3e6bc5e1607ddf8b42da4e`
-**Status**: Active backlog for v0.4+
+**Status**: Phase 2 Complete (Shared Library & Hash Skips Implemented)
 
 ---
 
@@ -306,7 +306,7 @@ Add to Tool Catalog:
 
 ---
 
-## Phase 2: Shared Library Refactor (Medium Priority)
+## Phase 2: Shared Library Refactor (Medium Priority) ✅ DONE
 
 ### Problem
 Currently, each binary (`src/bin/*.rs`) duplicates common logic:
@@ -339,9 +339,12 @@ Refactor common logic into a shared `src/lib.rs` while keeping **Atomic Binaries
 - [x] Refactor `check_gherkin` to use lib
 - [x] Refactor remaining tools (`check_context`, `check_constants`, `check_infrastructure`, `check_workflow_skip`)
 
-### Token Savings
-*   **Indirect**: Smaller binaries, less code for Agent to read if it needs to inspect source.
-*   **Maintenance**: Cheaper for Agent to fix bugs (1 file vs 8).
+### Results (Verified 2026-01-30)
+*   **Token Efficiency**: Warm runs reduced to **~350 tokens** (99% reduction) via Phase 1.5 + 2 integration.
+*   **Reliability**: Zero false positives in final verification (after excluding meta-docs).
+*   **Codebase**: 8 tools refactored to use `agent_tools` shared library.
+*   **Reports**: See `notes/token_efficiency_analysis_v7_phase2.md` and `notes/alignment_report.md`.
+
 
 ---
 
@@ -392,7 +395,7 @@ Track real-world token usage for validation.
 | Phase | Metric | Target |
 |-------|--------|--------|
 | 1 | Workflow script coverage | 100% |
-| 2 | CLI binary count | 1 |
+| 2 | Shared Library Integration | 100% |
 | 3 | Pre-commit hook active | Yes |
 | 4 | Sentinel count | 2+ |
 | 5 | Token tracking active | Yes |
