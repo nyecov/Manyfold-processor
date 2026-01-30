@@ -361,7 +361,7 @@ Enforce health checks before every git commit.
 ### Results (Verified 2026-01-30)
 *   **Zero-Token Audits**: User commits trigger checks locally, costing 0 agent tokens.
 *   **Reliability**: Prevents broken code from entering the repo history.
-*   **Analysis**: See `notes/token_efficiency_analysis_v8_headless_script.md`.
+*   **Analysis**: See [Analysis](token_efficiency_analysis_v8_headless_script.md).
 
 ---
 
@@ -369,6 +369,11 @@ Enforce health checks before every git commit.
 
 ### Goal
 Implement proactive watchers for drift detection and automated maintenance.
+
+### Key Documents
+*   [**Plan**](phase_4_sentinel_plan.md)
+*   [**Token Impact Analysis**](phase_4_sentinel_analysis.md)
+*   [**Integration Strategy**](phase_4_integration_analysis.md)
 
 ### Implementation
 1.  **Catalog Sentinel** (`sentinel_catalog.exe`):
