@@ -6,7 +6,19 @@ description: Testing audit of Gherkin scenario limits, behavior-focus, and trace
 
 This standalone workflow verifies that BDD feature files are logically sound and comply with quality standards.
 
-## 1. Quality Standards
+> [!IMPORTANT]
+> **Headless First Protocol**: Run the token-efficient script before manual analysis.
+
+## 0. Headless Execution (Preferred)
+```powershell
+.agent\tools\target\release\check_gherkin.exe
+```
+*   **If `[OK]`**: Report pass, skip manual steps.
+*   **If `[XX]`**: Proceed to manual analysis below.
+
+---
+
+## 1. Quality Standards (Manual Fallback)
 *   **Scenario Limits**: No more than **5 scenarios** per `.feature` file.
 *   **Step Count**: Aim for 3–7 steps per scenario.
 *   **Traceability**: Each feature/scenario must link to a relevant skill or document.

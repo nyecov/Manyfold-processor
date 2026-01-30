@@ -17,7 +17,9 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 To counteract the risks of high-velocity agentic changes (drift, hallucination, complexity):
 *   **Meta-Governance**: We build workflows that govern other workflows (e.g., `/audit_workflows`).
 *   **Deep Self-Checking**: Every layer (Docs, Tests, Logic, Infra) has a dedicated auditor.
-*   **Rigorous Constraint**: We prefer strict, automated blocking checks over loose guidelines.
+*   **Skepticism as Default**: "Human supervision is necessary but insufficient."
+
+> See [Agentic Philosophy](../agentic_philosophy/SKILL.md) for the complete paradigm.
 
 ---
 

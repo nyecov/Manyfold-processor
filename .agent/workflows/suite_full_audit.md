@@ -34,5 +34,12 @@ The ultimate verification tool for the Manyfold Processor project.
 
 For deterministic, agent-independent execution, run the shell script:
 ```bash
-./scripts/run_full_audit.sh
+.agent/tools/scripts/run_full_audit.sh
+```
+
+Or use the compiled Rust binaries:
+```powershell
+.agent\tools\target\release\audit_dependencies.exe
+.agent\tools\target\release\check_gherkin.exe
+.agent\tools\target\release\check_links.exe
 ```

@@ -1,6 +1,7 @@
 ---
 name: Code Quality Standards
 description: Mandatory standards for Rust code formatting, linting, and security auditing.
+requires: [project_details, agentic_philosophy]
 ---
 
 # Code Quality Standards

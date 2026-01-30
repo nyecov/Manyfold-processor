@@ -1,0 +1,22 @@
+[package]
+name = "agent-tools"
+version = "0.1.0"
+edition = "2021"
+description = "AI Agent governance tools for self-healing and token efficiency."
+
+[dependencies]
+walkdir = "2.5"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+
+[[bin]]
+name = "audit_dependencies"
+path = "src/bin/audit_dependencies.rs"
+
+[[bin]]
+name = "check_links"
+path = "src/bin/check_links.rs"
+
+[[bin]]
+name = "check_gherkin"
+path = "src/bin/check_gherkin.rs"

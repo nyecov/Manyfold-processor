@@ -1,4 +1,6 @@
-# Improvement Plan: Skills & Workflows Documentation
+# Skills & Workflows Improvement Plan
+
+> **Philosophy**: This plan follows the [Agentic Philosophy](../.agent/skills/agentic_philosophy/SKILL.md) (Defensive Orchestration).
 
 **Created**: 2026-01-30
 **Status**: Active backlog for v0.4+

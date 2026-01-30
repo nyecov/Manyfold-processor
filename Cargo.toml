@@ -18,6 +18,8 @@ tower = "0.4"
 tower-http = { version = "0.4", features = ["fs", "cors"] }
 log = "0.4"
 env_logger = "0.10"
+walkdir = "2.5.0"
+serde_yaml = "0.9.34"
 
 [features]
 default = []

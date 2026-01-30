@@ -6,7 +6,19 @@ description: validate `requires:` frontmatter and skill dependency links.
 
 This standalone workflow validates the explicit dependency graph defined in skill frontmatter.
 
-## 1. Inventory & Parsing
+> [!IMPORTANT]
+> **Headless First Protocol**: Run the token-efficient script before manual analysis.
+
+## 0. Headless Execution (Preferred)
+```powershell
+.agent\tools\target\release\audit_dependencies.exe
+```
+*   **If `[OK]`**: Report pass, skip manual steps.
+*   **If `[XX]`**: Proceed to manual analysis below.
+
+---
+
+## 1. Inventory & Parsing (Manual Fallback)
 *   Scan all `SKILL.md` files.
 *   Parse the YAML frontmatter for the `requires:` block.
 

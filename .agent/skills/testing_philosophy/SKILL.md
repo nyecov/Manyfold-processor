@@ -1,9 +1,7 @@
 ---
 name: Testing Philosophy
 description: High-level strategy and governing mandates for Behavior Driven Development (BDD).
-requires:
-  - gherkin_style_guide      # How to write features
-  - cucumber_rust_reference  # Rust implementation details
+requires: [gherkin_style_guide, cucumber_rust_reference, project_details, agentic_philosophy]
 ---
 
 # Testing Philosophy: Strategy & Governance

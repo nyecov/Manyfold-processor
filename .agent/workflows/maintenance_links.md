@@ -6,7 +6,19 @@ description: Synchronize and update relative links across project skills, workfl
 
 This standalone workflow maintains the integrity of the "web of knowledge" by ensuring all internal links are relative and functional.
 
-## 1. Inventory
+> [!IMPORTANT]
+> **Headless First Protocol**: Run the token-efficient script before manual analysis.
+
+## 0. Headless Execution (Preferred)
+```powershell
+.agent\tools\target\release\check_links.exe
+```
+*   **If `[OK]`**: Report pass, skip manual steps.
+*   **If `[XX]`**: Proceed to manual analysis below to fix violations.
+
+---
+
+## 1. Inventory (Manual Fallback)
 *   List all markdown files in `.agent/`, `docs/`, `notes/`, and `tests/`.
 
 ## 2. Scan & Update
