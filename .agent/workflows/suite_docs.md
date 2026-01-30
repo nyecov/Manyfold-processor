@@ -24,5 +24,11 @@ This suite performs a comprehensive audit of the project's documentation by invo
 *   Invoke `/maintenance_annex_review` (Content Revival Scan)
 *   📢 **Report**: Annex health & migration opportunities
 
-## 4. Findings Consolidation
+## 4. Integrity Audit
+*   Invoke `/audit_constants` (Canonical sources)
+*   Invoke `/audit_dependencies` (Skill graph)
+*   Invoke `/audit_workflows` (Governance & Logic)
+*   📢 **Report**: Integrity audit status
+
+## 5. Findings Consolidation
 *   Synthesize reports from all atomics into a unified documentation health overview.

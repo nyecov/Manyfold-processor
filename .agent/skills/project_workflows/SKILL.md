@@ -11,6 +11,14 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 *   **Atomic Standalones**: Specialized tools with **zero dependencies**. They never call other workflows.
 *   **Orchestrated Suites**: High-level tools that invoke multiple Atomics for comprehensive audits.
 
+## 🧠 Philosophy: Defensive Orchestration
+> "Agentic 'vibecoding' can introduce broken logic, missed concepts, and bloat at every step—even with human supervision."
+
+To counteract the risks of high-velocity agentic changes (drift, hallucination, complexity):
+*   **Meta-Governance**: We build workflows that govern other workflows (e.g., `/audit_workflows`).
+*   **Deep Self-Checking**: Every layer (Docs, Tests, Logic, Infra) has a dedicated auditor.
+*   **Rigorous Constraint**: We prefer strict, automated blocking checks over loose guidelines.
+
 ---
 
 ## 🚀 Atomic Standalones (Basics)
@@ -22,6 +30,9 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 *   **`/audit_gherkin`**: Verifies BDD scenario quality and layering.
 *   **`/audit_step_glue`**: Verifies alignment between Gherkin and Rust.
 *   **`/audit_infrastructure`**: Checks codebase/Docker against design mandates.
+*   **`/audit_constants`**: Checks for hardcoded values vs `constants.yml`.
+*   **`/audit_dependencies`**: Validates `requires:` fields in skills.
+*   **`/audit_workflows`**: Governs workflow library integrity and redundancy.
 
 ### Maintenance Tools (Active)
 *   **`/maintenance_links`**: Synchronizes relative links across the project.
