@@ -52,7 +52,8 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 ### Maintenance Tools (Active)
 *   **`/maintenance_links`**: Synchronizes relative links across the project.
 *   **`/maintenance_c4`**: Updates Mermaid-based C4 architecture diagrams.
-*   **`/maintenance_annex_migration`**: Audits skills/docs/notes for content to archive.
+*   **`/maintenance_cleanup`**: **[SENTINEL]** Finds orphans (dead code) and classifies stale content for archiving.
+*   **`/maintenance_metrics`**: **[SENTINEL]** Reviews context cost efficiency trends.
 *   **`/maintenance_annex_review`**: Review annex content for candidate retrieval (move to active) or staleness updates.
 
 ---

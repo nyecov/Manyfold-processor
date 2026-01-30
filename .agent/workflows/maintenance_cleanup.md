@@ -15,12 +15,25 @@ cargo run --release --manifest-path .agent/tools/Cargo.toml --bin sentinel_dead_
 
 **Output**: `notes/archival_candidates.md`
 
-## 🧠 Step 2: Agent Review
-Read `notes/archival_candidates.md`.
-For each listed file:
 
-1.  **Analyze**: Read the file. Is it valuable?
-    *   **Yes**: It is "Forgotten Knowledge". Add a link to it in a relevant `SKILL.md` or `README.md` to "revive" it.
-    *   **No**: It is "Stale". Move it to `.agent/annex/` (and update internal links if any, though orphans usually have none).
+## 🧠 Step 2: Classification & Review (Manual)
 
-2.  **Report**: Update the user on what was archived vs revived.
+### Filter 1: The Reaper's List (`archival_candidates.md`)
+*   **Action**: Review files flagged by Sentinel.
+*   **Archival**: If valuable but stale, move to `.agent/annex/`.
+*   **Revival**: If valuable and active, link from `SKILL.md` or `README.md`.
+*   **Deletion**: If truly useless junk, delete.
+
+### Filter 2: Staleness Check (Live Files)
+Even if linked, files may be "stale" (Historical).
+
+| Indicator | Action | Example |
+| :-- | :-- | :-- |
+| **Static Snapshots** | Archive | Hardware specs frozen at a date |
+| **Decision Logs** | Archive | "Why we chose X" (unless Strategy) |
+| **Post-Mortems** | Archive | Incident analysis |
+| **Version Notes** | Archive | "Changes in v0.2" |
+
+## 🔧 Step 3: Execution
+1.  Move files to `.agent/annex/[category]/`.
+2.  Update links if necessary.
