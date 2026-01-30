@@ -30,4 +30,4 @@ Use this local copy to answer questions that are not covered by the public docum
 ## ⚠️ Important Notes
 *   **Do Not Edit**: Never modify files inside `Manyfold_reference/`.
 *   **Do Not Commit**: This directory is git-ignored.
-*   **Cross-Reference**: When implementing features, always cross-reference findings here with the official **[Manyfold API Integration](../manyfold_api_integration/SKILL.md)** skill to ensure you are using the public API contract, not internal implementations.
+*   **Cross-Reference**: When implementing features, always cross-reference findings here with the official **[Manyfold API Endpoints](../manyfold_api_endpoints/SKILL.md)** skill to ensure you are using the public API contract, not internal implementations.

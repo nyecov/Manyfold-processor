@@ -1,0 +1,45 @@
+# Institutional Engineering Audit: Skills & Workflows
+**Date**: 2026-01-30
+**Auditor**: Gemini 3 Flash
+**Scope**: `.agent/skills/` and `.agent/workflows/`
+
+This report provides a multidisciplinary analysis of the project's foundational infrastructure to ensure it meets institutional-grade standards for reliability, maintainability, and strategic oversight.
+
+````carousel
+### 💻 Perspective: Senior Software Developer
+"The internal logic is robust, but our implementation depth is variable."
+
+*   **Redundancies**: `stl_specification` and `3mf_specification` both touch on "Vertex Deduplication". While valid for both, the canonical algorithm should be owned by `geometry_governance` to avoid implementation drift.
+*   **Discrepancy**: `3mf_specification` references "Tus protocol" in `manyfold_api_endpoints`, but the actual implementation contract for resumable chunks is a "Strategy-level" concern that should live in `api_resilience_strategy`.
+*   **Logical Error**: The `audit_step_glue` workflow assumes high-transparency between Gherkin and Rust. However, our modular `*_steps.rs` files introduce a "modding overhead" that isn't fully reflected in the maintenance workflows.
+*   **Weakspot**: We lack a common "Geometry Utility" library reference in our skills. If we add new model formats (e.g. OBJ), we will currently duplicate parsing logic.
+
+<!-- slide -->
+### 🏗️ Perspective: Senior System Architect
+"The C4 Model is well-integrated, but our tiered enforcement is 'Soft'."
+
+*   **Overlap**: `architectural_guidelines` (Governance) and `deploy_on_radxa_rock5` (Target) both dictate memory reservations. This is a "Double-Source of Truth" risk.
+    *   *Correction*: Guidelines should point to the Target Spec for values.
+*   **Logical Error**: The `RAMDrive` mandate in `deploy_on_radxa_rock5` is critical for SSD health, but `audit_infrastructure` only checks for the presence of the volume, not if the application is actually *using* it (Environment variable verification).
+*   **Weakspot (Scale)**: Our 750MB RAM reservation vs. 1GB+ STL files creates a "Streaming Hardline". If any component (like a ZIP extractor) defaults to in-memory buffering, the entire Tier 3 strategy collapses.
+*   **Discrepancy**: The `observability_standards` are currently an "Orphan Skill"—referenced by `deployment_operations` but not fully integrated into our `/audit_infrastructure` workflow.
+
+<!-- slide -->
+### 👔 Perspective: Senior Manager
+"Strategic risk is localized to hardware scarcity and institutional rot."
+
+*   **Redundancy**: Having separate `project_details` and `README.md` in skills creates a management overhead. `project_details` should be the "Master Data" skill.
+*   **Weakspot (Hardware Risk)**: The "Hardware Preservation Strategy" is an excellent management mandate, but it lacks a "Verification Workflow". We are currently "Trusting, not Verifying" SSD endurance.
+*   **Contradiction**: We claim "Multi-Platform Strategy", but our `code_quality_standards` are heavily Rust/Cargo-centric. If we introduce non-Rust binaries (e.g. pre-compiled NPU blobs), our quality audit suite will ignore them.
+*   **Discrepancy**: Our `/suite_full_audit` is categorized as "Revolutionary", but it lacks a "Managerial Sign-off" or "Freeze" state. It's a developer-facing tool that needs a high-level summary view for product oversight.
+````
+
+---
+
+## 🛠️ Combined Recommended Actions
+
+1.  **De-duplicate Memory Mandates**: Move all hard numbers to a central `Environment_Constraints` (or similar) and have `architectural_guidelines` reference it.
+2.  **Harden Infrastructure Audit**: Update `/audit_infrastructure` to verify that `WORKING_DIR` is correctly mapped to the `tmpfs` RAM drive.
+3.  **Cross-Link Specifications**: Move "Vertex Deduplication" strategy to `geometry_governance` and have specific format skills link to it.
+4.  **Integrate Observability**: Ensure `/audit_infrastructure` checks for health-check endpoints and logging configurations defined in `observability_standards`.
+5.  **Refine Hardware Verification**: Investigate a "Maintenance" workflow that can (where possible) check system logs for OOM triggers or high I/O wait times to protect the Radxa hardware.

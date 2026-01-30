@@ -62,7 +62,7 @@ This skill governs the deployment and optimization of the Manyfold Processor on 
 ## 3. Capacity Planning & Constraints
 **Golden Rule**: The Manyfold Processor is a system service. It requires guaranteed resources.
 
-*   **Minimum RAM**: 2GB Total System RAM (Tier 3).
+*   **Minimum RAM**: 1GB Total System RAM (Tier 3).
 *   **Guaranteed Headroom**: **750MB FREE RAM** (Reserved).
     *   *Warning*: The container is configured to **exit immediately** if it cannot reserve this memory. Ensure you do not over-provision the host.
 *   **Storage**: 10GB+ Free Disk Space (for temporary extraction and caching).
@@ -73,5 +73,9 @@ When asked to "Deploy" or "Validate Compatibility":
 1.  **Check Architecture**: ensure Docker image is built for `linux/arm64`.
 2.  **Check Memory**: Verify host has >750MB RAM available for reservation.
 3.  **Check Volumes**: Verify `tmpfs` configuration in Compose.
-3.  **Check OMV compliance**: Ensure output is formatted for Copy/Paste into OMV UI.
-4.  **Fan Control**: **IGNORE** this aspect. `rock5-fan-control.py` is an independent side-project managed externally. The Manyfold Processor must not attempt to manage, check, or interact with thermal control scripts.
+---
+
+## See Also
+*   **Context**: [developer_hardware_specs](../developer_hardware_specs/SKILL.md) (Windows development environment specs).
+*   **Architecture**: [architectural_guidelines](../architectural_guidelines/SKILL.md)
+*   **C4 Model**: [c4_model](../c4_model/SKILL.md)

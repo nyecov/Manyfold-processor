@@ -1,0 +1,56 @@
+# Institutional Engineering Audit: Skills & Workflows (High-Level Analysis)
+**Date**: 2026-01-30
+**Auditor**: Gemini 3 Pro (High)
+**Scope**: `.agent/skills/` and `.agent/workflows/`
+
+While the previous audit correctly identified structural redundancies, this High-Level analysis focuses on **Systemic Fragility**, **Governance Drift**, and **Platform Simulation Risks**.
+
+````carousel
+### 🧨 Critical Risk: The "Simulation Gap"
+**Severity**: High | **Domain**: Hardware/Platform
+
+The project relies on a "Deploy on Target" strategy for verification, but development occurs on Windows (Ryzen/AMD64).
+*   **The Trap**: `architectural_guidelines` mandates "Graceful Degradation" if `librga` (Rockchip) is missing. However, on the Windows Dev machine, the code *always* degrades.
+*   **Invisible Code**: The primary "Tier 1" logic (RGA/NPU paths) is **never exercised** during `suite_tests` on the dev workspace. We are shipping verified *fallback* code, but unverified *production* code.
+*   **Mitigation**: We require a **Hardware Abstraction Layer (HAL) Mocking Strategy**. The system must support a `MOCK_HARDWARE=rock5` env var that forces the *logic* of the RGA path (even if the actual bit-blitting is simulated or no-op) to verify the state machine.
+
+<!-- slide -->
+### 🕸️ Governance Risk: Orchestration Fragility
+**Severity**: Medium | **Domain**: CI/Workflows
+
+The `suite_full_audit` workflow relies on **Semantic Parsing** by the agent ("Invoke /suite_docs").
+*   **The Trap**: This is not a deterministic script. If an agent "hallucinates" that it ran the step, the audit passes falsely.
+*   **Fragility**: A rename of a file (e.g., `suite_docs.md` -> `audit_docs.md`) breaks the suite without a compiler error.
+*   **Mitigation**: Workflows should transition from "Natural Language Invocation" to **Structure-Aware Dependency Chains** (e.g., explicit file checks or a master script that runs them).
+
+<!-- slide -->
+### 👻 Security Risk: "Shadow Code" (Python)
+**Severity**: Medium | **Domain**: Security/Hygiene
+
+The Governance mandates "Phase out Python", but `geometry_governance` allows it for "Legacy Wrapping".
+*   **The Trap**: `audit_code_quality` enforces strict Rust standards (`clippy`, `rustfmt`, `cargo-audit`). It completely **ignores** Python files.
+*   **Zombie Surface**: As Rust hardens, the Python wrapper becomes the soft underbelly. It effectively has **Zero Governance**.
+*   **Mitigation**: Explicitly add a `safety_check_python` step to `audit_code_quality` (even simple `pylint` or `safety check`) OR mandate immediate deletion. "Phasing out" without an audit trail is "Rotting".
+
+<!-- slide -->
+### 🔮 Strategic Risk: The "Bus Factor" of Skills
+**Severity**: Low | **Domain**: Knowledge Management
+
+The `skill` system is excellent for Agents, but human readability is degrading.
+*   **The Trap**: Splitting `stl_specification`, `3mf_specification`, and `geometry_governance` creates a "hyper-linked maze".
+*   **Drift**: A developer modifying STL logic might miss the `geometry_governance` mandate because it resides in a generic parent skill.
+*   **Mitigation**: Implement **"Context Injection" headers** in the source code. The Rust files themselves should reference the Skill URI, closing the loop between Code and Knowledge.
+````
+
+---
+
+## 🛡️ Strategic Recommendations
+
+1.  **Implement HAL Mocks**: Create a `MockRga` trait implementation that runs on Windows but logs "RGA Operation Simulated". This verifies the Tier 1 logic flow on Tier 2 hardware.
+2.  **"Hard" Orchestration**: Convert the critical `suite_full_audit` into a standardized shell script (`run_audit.sh`) or Rust binary that *mechanically* executes the markdown workflows. Reliability > Flexibility here.
+3.  **Python Sunset Protocol**: Set a hard date or logic gate (e.g., "When Geometry Engine hits v1.0") to delete the Python wrapper. Until then, audit it.
+4.  **Code-to-Skill Linking**: Add comment headers to `main.rs` and key logic files: `// Governance: .agent/skills/architecture.md`.
+
+---
+
+**Verdict**: The project is **Structurally Sound** but **Operationally Blind** to its Target Hardware during the development loop.

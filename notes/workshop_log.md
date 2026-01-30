@@ -17,7 +17,7 @@
 ## 📝 Workshop Items
 ### 1. Logging & Monitoring
 *   **Decision**: Require structured logging (JSON in production) and Health Checks.
-*   **Action**: Created `skills/logging_and_monitoring`.
+*   **Action**: Created [logging_and_monitoring](../.agent/skills/logging_and_monitoring/SKILL.md).
 
 ### 2. Memory Managment
 *   **Constraint**: 750MB specific requirement.
@@ -29,3 +29,9 @@
 ### 3. Testing Strategy
 *   **Constraint**: Hardware verification on User Lab devices (RPi 2/5, HP T610) is deferred until **v1.0 (Release)**.
 *   **Context**: Early development (v0.x) focuses on code stability in the standard Docker environment. Specialized hardware testing is reserved for the Release Candidate phase.
+
+---
+
+## See Also
+*   **Deployment Rules**: [deploy_on_radxa_rock5](../.agent/skills/deploy_on_radxa_rock5/SKILL.md) (RK3588 optimizations).
+*   **Hardware Context**: [developer_hardware_specs](../.agent/skills/developer_hardware_specs/SKILL.md) (Development environment specs).

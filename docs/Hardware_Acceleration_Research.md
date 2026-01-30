@@ -57,4 +57,10 @@ And mount the user-space libraries if not installed in the container:
 volumes:
   - /usr/lib/aarch64-linux-gnu/librga.so:/usr/lib/librga.so
   - /usr/lib/aarch64-linux-gnu/librknnrt.so:/usr/lib/librknnrt.so
+
+---
+
+## See Also
+*   **Implementation Strategy**: [File_Format_Analysis.md](File_Format_Analysis.md) (Standard CPU-based processing rules).
+*   **Deployment Rules**: [deploy_on_radxa_rock5](../.agent/skills/deploy_on_radxa_rock5/SKILL.md) (Mandates for using NPU/RGA).
 ```

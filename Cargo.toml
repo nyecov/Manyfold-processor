@@ -13,8 +13,15 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 notify = "6.1"
 anyhow = "1.0"
+axum = "0.6"
+tower = "0.4"
+tower-http = { version = "0.4", features = ["fs", "cors"] }
 log = "0.4"
 env_logger = "0.10"
+
+[features]
+default = []
+mock-hardware = []  # Enable mock HAL implementations for Tier 1 simulation
 
 [dev-dependencies]
 cucumber = "0.20"

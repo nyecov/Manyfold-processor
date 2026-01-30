@@ -45,3 +45,9 @@ description: Specifications and context for the Windows development environment.
 ## ⚡ Power Management
 *   **Type**: Desktop ATX
 *   **Status**: AC Power
+
+---
+
+## See Also
+*   **Target Hardware**: [deploy_on_radxa_rock5](../deploy_on_radxa_rock5/SKILL.md) (Rock 5 ITX deployment guidelines).
+*   **Project Context**: [project_details](../project_details/SKILL.md)

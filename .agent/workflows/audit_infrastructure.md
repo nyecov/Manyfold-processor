@@ -1,0 +1,23 @@
+---
+description: Systems audit of codebase and infrastructure alignment with design truth.
+---
+
+# Atomic Audit: Infrastructure & System
+
+This standalone workflow verifies that the actual project implementation matches architectural mandates.
+
+## 1. Codebase Alignment
+*   Verify language usage (Rust primary, minimal Python).
+*   Check for dependency compliance in `Cargo.toml`.
+*   Verify standard error handling (No panics).
+
+## 2. Infrastructure Alignment
+*   Check `Dockerfile` for mandatory build dependencies and optimizations.
+*   Check `docker-compose.yml` for volume mounts and hardware tier configurations (e.g. 750MB Reservation).
+
+## 3. Mandate Verification
+*   Flag any direct database sharing or internal linking (Architecture break).
+*   Verify that API integrations follow resilience standards (if detectable).
+
+## 4. Report
+*   List alignment violations with risk assessment (High/Low).

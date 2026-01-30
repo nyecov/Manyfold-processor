@@ -1,0 +1,23 @@
+services:
+  processor:
+    build: .
+    image: manyfold-processor:latest
+    container_name: manyfold-processor
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./input:/input
+      - ./output:/output
+      - ./config:/config
+      - ./temp:/app/temp
+    environment:
+      - RUST_LOG=info
+      - MANYFOLD_API_URL=${MANYFOLD_API_URL:-http://localhost:3000}
+      - MANYFOLD_API_KEY=${MANYFOLD_API_KEY:-}
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: 750M
+        limits:
+          memory: 2G

@@ -1,37 +1,49 @@
 ---
 name: Project Workflows
-description: Guide to available Antigravity Workflows and maintenance procedures for the project.
+description: Guide to available Antigravity Workflows (Atomics and Suites) for the project.
 ---
 
 # Project Workflows
 
-This project utilizes **Antigravity Workflows** (stored in `.agent/workflows/`) to automate routine maintenance and verification tasks.
+This project utilizes a hierarchical suite of **Atomics** (independent standalones) and **Suites** (orchestrators) to automate maintenance and verification.
 
-## 🚀 Available Workflows
+## 🏗️ Workflow Architecture
+*   **Atomic Standalones**: Specialized tools with **zero dependencies**. They never call other workflows.
+*   **Orchestrated Suites**: High-level tools that invoke multiple Atomics for comprehensive audits.
 
-### 1. Check Documentation Consistency
-*   **Command**: `/check_docs_consistency`
-*   **File**: `.agent/workflows/check_docs_consistency.md`
-*   **Purpose**: Scans `docs/` and `.agent/skills/` to identify:
-    *   Logical conflicts (e.g., conflicting language mandates).
-    *   Missing details or placeholders.
-    *   Inconsistencies in hardware/deployment rules.
-*   **When to use**: Run this before finalizing any major documentation update or architectural shift.
+---
 
-### 2. Check Implementation Alignment
-*   **Command**: `/check_implementation_alignment`
-*   **File**: `.agent/workflows/check_implementation_alignment.md`
-*   **Purpose**: Verifies that the actual codebase matches architectural mandates while ignoring missing features.
-*   **When to use**: Run this when validating the project's health or after significant code changes.
+## 🚀 Atomic Standalones (Basics)
+
+### Audit Tools (Passive)
+*   **`/audit_context`**: Evaluates semantic organization (Strategy vs. Reference).
+*   **`/audit_code_quality`**: Performs code formatting, linting, and security checks.
+*   **`/audit_consistency`**: Checks logical integrity across the knowledge base.
+*   **`/audit_gherkin`**: Verifies BDD scenario quality and layering.
+*   **`/audit_step_glue`**: Verifies alignment between Gherkin and Rust.
+*   **`/audit_infrastructure`**: Checks codebase/Docker against design mandates.
+
+### Maintenance Tools (Active)
+*   **`/maintenance_links`**: Synchronizes relative links across the project.
+*   **`/maintenance_c4`**: Updates Mermaid-based C4 architecture diagrams.
+
+---
+
+## 🏛️ Orchestrated Suites (Compounded)
+
+*   **`/suite_docs`**: Performs a full documentation audit (Context + Consistency).
+*   **`/suite_tests`**: Performs a full testing stack audit (Gherkin + Glue).
+*   **`/suite_full_audit`**: The ultimate project health check (Docs + Tests + System).
+
+---
 
 ## 🛠️ Maintenance Procedures
 
-### Adding New Workflows
-1.  Create a `.md` file in `.agent/workflows/`.
-2.  Add a YAML frontmatter with a `description`.
-3.  Define the step-by-step instructions.
-4.  Update this skill (`project_workflows`) to include the new workflow.
+### Adding Workflows
+1.  **Atomic**: Must be self-contained; no `/command` calls.
+2.  **Suite**: Can orchestrate Atomics via `/command` calls.
+3.  Update this skill catalog accordingly.
 
-### Updating Skills
-*   Always ensure new findings (e.g., from Language Analysis) are reflected in the relevant skills (`architectural_guidelines`, `deploy_on_radxa_rock5`).
-*   Use `/check_docs_consistency` to verify changes.
+### Standards
+*   Always use relative paths in documentation.
+*   Follow the "Strategy vs. Reference" semantic model.

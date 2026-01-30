@@ -98,3 +98,9 @@ The user asked: *"Are GC and Runtime needed?"*
 2.  **Safety**: Ensures the service won't crash after running for weeks (memory safety).
 3.  **Deployment**: Compiles to a single binary, making Docker deployment trivial and lightweight.
 4.  **Fit**: Perfectly balances the "Systems" need (File I/O) with the "Computation" need (3D Geometry).
+
+---
+
+## See Also
+*   **Quality Context**: [Documentation_Quality_Comparison.md](Documentation_Quality_Comparison.md) (v0.2 vs v0.3 rigor comparison).
+*   **Hardware Context**: [Hardware_Acceleration_Research.md](Hardware_Acceleration_Research.md) (NPU/RGA potential).

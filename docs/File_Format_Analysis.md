@@ -43,7 +43,7 @@ This document details the internal structure and processing strategy for support
     *   **Siblings**: Matched images via filename tokens (e.g., `car_v1.stl` <-> `car_preview.jpg`).
 *   **Rust Strategy**:
     *   **Parsing**: Use `stl_io` crate.
-    *   **Conversion**: Stream triangles into a new 3MF container (using `xml-writer` or similar). structure.
+    *   **Conversion**: Stream triangles into a new 3MF container (using `xml-writer` or similar).
     *   **Sibling Request**: Re-implement the "Token Overlap" logic in Rust to find preview images.
 
 ### C. OBJ (Wavefront)
@@ -62,3 +62,10 @@ This document details the internal structure and processing strategy for support
     1.  **Archives**: Never call `.extract_all()`. Iterate entries and stream `std::io::copy` to disk.
     2.  **3MF**: Peek at `3dmodel.model` header (first 50KB) for metadata. Stop reading if title found.
     3.  **IO Buffer**: Use `BufReader` with 8KB capacity for efficient SSD usage.
+
+---
+
+## See Also
+*   **Hardware Optimization**: [Hardware_Acceleration_Research.md](Hardware_Acceleration_Research.md) (Offloading image tasks to RGA).
+*   **Specialized Skill**: [stl_handling](../.agent/skills/stl_handling/SKILL.md)
+*   **Specialized Skill**: [3mf_handling](../.agent/skills/3mf_handling/SKILL.md)
