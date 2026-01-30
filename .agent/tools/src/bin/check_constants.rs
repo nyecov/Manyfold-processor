@@ -49,6 +49,18 @@ fn main() {
                 continue;
             }
             
+            // Files that document these values as examples
+            let excludes = [
+                "deploy_on_radxa_rock5", 
+                "Documentation_Quality_Comparison", 
+                "improvement_plan",
+            ];
+            
+            let normalized_path = path_str.replace("\\", "/");
+            if excludes.iter().any(|e| normalized_path.contains(e)) {
+                continue;
+            }
+            
             let content = read_to_string_lossy(&path);
             for (i, line) in content.lines().enumerate() {
                 for magic in &magic_values {

@@ -57,6 +57,13 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 
 ---
 
+## 🛡️ Pre-Commit Gatekeeper (Automated)
+*   **`.git/hooks/pre-commit`**: Automatically runs **`run_full_audit.sh`** before every commit.
+*   **Function**: Blocks any commit that fails the health check (Exit Code 1).
+*   **Bypass**: `git commit --no-verify` (Use only for emergency WIP saves).
+
+---
+
 ## 🏛️ Orchestrated Suites (Compounded)
 
 *   **`/suite_docs`**: Performs a full documentation audit (Context + Consistency).

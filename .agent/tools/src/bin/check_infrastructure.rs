@@ -7,7 +7,7 @@ fn main() {
     let compose_path = "compose.yml";
     if exists(compose_path) {
         let content = read_to_string_lossy(std::path::Path::new(compose_path));
-        if !content.contains("reservation:") {
+        if !content.contains("reservation:") && !content.contains("reservations:") {
             audit.fail("compose.yml -> Missing memory reservation");
         }
         if !content.contains("limits:") && !content.contains("limit:") {
