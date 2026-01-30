@@ -99,9 +99,9 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |
 | `check_gherkin.exe` | `/audit_gherkin` | Verifies Gherkin scenario quality |
 | `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
-| `check_links.exe` | `/audit_links` | Checks for absolute paths and broken local links |
-| `check_tool_alignment_skip.exe` | `/audit_tool_alignment` | Hash-based skip detection for /audit_tool_alignment |
-| `check_workflow_skip.exe` | `/audit_workflow` | Checks git status for workflow dependencies |
+| `check_links.exe` | `/maintenance_links` | Checks for absolute paths and broken local links |
+| `check_tool_alignment_skip.exe` | `/audit_tool_alignment (Helper)` | Hash-based skip detection for /audit_tool_alignment |
+| `check_workflow_skip.exe` | `(Helper)` | Checks git status for workflow dependencies |
 | `sentinel_catalog.exe` | `(Meta)` | Metadata Sentinel: Tool Catalog Synchronizer |
 | `sentinel_dead_code.exe` | `(Meta)` | Dead Code Sentinel: The Reaper |
 | `sentinel_metrics.exe` | `(Meta)` | Phase 5: Metrics Sentinel |

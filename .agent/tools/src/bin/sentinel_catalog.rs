@@ -67,24 +67,34 @@ fn scan_tools(dir: &str) -> Vec<ToolMetadata> {
         // Parse doc comments
         let mut description = "Undocumented".to_string();
         let mut workflow = "(Meta)".to_string(); // Default
+        let mut workflow_override = None;
 
         for line in content.lines() {
             if line.starts_with("//!") {
                 let clean = line.trim_start_matches("//!").trim();
+                
+                // Workflow Override
+                if clean.starts_with("Workflow:") {
+                    workflow_override = Some(clean.trim_start_matches("Workflow:").trim().to_string());
+                    continue;
+                }
+
                 // Simple heuristic: First line is description
                 if description == "Undocumented" && !clean.is_empty() {
                     description = clean.to_string();
                 }
-                // Try to find workflow reference? 
-                // For now, simple description is enough.
             }
         }
         
-        // Infer workflow from name if possible
-        if name.starts_with("check_") {
-            workflow = format!("/audit_{}", &name[6..].replace("_skip", ""));
-        } else if name.starts_with("audit_") {
-            workflow = format!("/{}", name);
+        if let Some(w) = workflow_override {
+            workflow = w;
+        } else {
+            // Infer workflow from name if possible
+            if name.starts_with("check_") {
+                workflow = format!("/audit_{}", &name[6..].replace("_skip", ""));
+            } else if name.starts_with("audit_") {
+                workflow = format!("/{}", name);
+            }
         }
 
         metadata.push(ToolMetadata {

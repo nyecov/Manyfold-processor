@@ -1,4 +1,5 @@
 //! Hash-based skip detection for /audit_tool_alignment
+//! Workflow: /audit_tool_alignment (Helper)
 //!
 //! This script computes a SHA-256 hash of all tool-related content and compares
 //! it against a cached value. If unchanged, the expensive agent audit can be skipped.

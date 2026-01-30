@@ -1,4 +1,5 @@
 //! Checks for absolute paths and broken local links
+//! Workflow: /maintenance_links
 use agent_tools::prelude::*;
 
 fn main() {
