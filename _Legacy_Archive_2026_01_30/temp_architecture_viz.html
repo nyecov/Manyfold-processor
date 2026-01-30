@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: white; }
+        .diagram-container { margin-bottom: 50px; border: 1px solid #ddd; padding: 20px; border-radius: 8px; }
+        h2 { color: #333; }
+    </style>
+</head>
+<body>
+    <div class="diagram-container" id="context">
+        <h2>Level 1: System Context</h2>
+        <pre class="mermaid">
+graph LR
+    User[User] -->|Drops Files| InputDir[Input Directory]
+    InputDir -->|Watchdog Event| Processor[Manyfold Processor System]
+    Processor -->|Reads/Writes| FileSystem[File System]
+    Processor -->|Updates| DB[(Manyfold Database)]
+    Processor -->|Moves Final Assets| OutputDir[Manyfold Library Folder]
+        </pre>
+    </div>
+
+    <div class="diagram-container" id="containers">
+        <h2>Level 2: Containers</h2>
+        <pre class="mermaid">
+graph TD
+    subgraph Docker Container
+        Watchdog[Python Service / Watchdog]
+        API[FastAPI Web Server]
+        RustTool[stl23mf (Rust Binary)]
+    end
+
+    Watchdog -->|Triggers| RustTool
+    Watchdog -->|Orchestrates| FileOps[File System Operations]
+    API -->|Reads/Controls| Watchdog
+    RustTool -->|Optimized Processing| StlConversion[STL -> 3MF]
+    
+    FileOps -->|Inputs| Input(/input)
+    FileOps -->|Staging| Staging(/staging)
+    FileOps -->|Outputs| Output(/output)
+        </pre>
+    </div>
+
+    <div class="diagram-container" id="components">
+        <h2>Level 3: Components</h2>
+        <pre class="mermaid">
+graph TD
+    Monitor[WatchdogListener] -->|Event| Router[Processing Router]
+    
+    Router -->|Single File| LooseFilePlugin[LooseFilePlugin]
+    Router -->|Archive| ArchivePlugin[ArchiveProjectPlugin]
+    Router -->|Directory| DirPlugin[DirectoryProjectPlugin]
+    
+    subgraph Common Utilities
+        GeoConv[GeometryConverter (wraps stl23mf)]
+        ImgProc[ImageProcessor]
+        MetaGen[MetadataGenerator]
+    end
+    
+    LooseFilePlugin --> GeoConv
+    ArchivePlugin --> MetaGen
+    DirPlugin --> ImgProc
+        </pre>
+    </div>
+</body>
+</html>

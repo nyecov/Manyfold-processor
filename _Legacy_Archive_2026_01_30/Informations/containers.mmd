@@ -1,0 +1,15 @@
+graph TD
+    subgraph Docker Container
+        Watchdog["Python Service / Watchdog"]
+        API["FastAPI Web Server"]
+        RustTool["stl23mf (Rust Binary)"]
+    end
+
+    Watchdog -->|Triggers| RustTool
+    Watchdog -->|Orchestrates| FileOps["File System Operations"]
+    API -->|Reads/Controls| Watchdog
+    RustTool -->|"Optimized Processing"| StlConversion["STL -> 3MF"]
+    
+    FileOps -->|Inputs| Input(/input)
+    FileOps -->|Staging| Staging(/staging)
+    FileOps -->|Outputs| Output(/output)

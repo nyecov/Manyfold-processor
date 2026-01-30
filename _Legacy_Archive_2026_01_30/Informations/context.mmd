@@ -1,0 +1,6 @@
+graph LR
+    User[User] -->|Drops Files| InputDir[Input Directory]
+    InputDir -->|Watchdog Event| Processor[Manyfold Processor System]
+    Processor -->|Reads/Writes| FileSystem[File System]
+    Processor -->|Updates| DB[(Manyfold Database)]
+    Processor -->|Moves Final Assets| OutputDir[Manyfold Library Folder]

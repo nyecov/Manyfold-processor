@@ -1,0 +1,16 @@
+graph TD
+    Monitor[WatchdogListener] -->|Event| Router["Processing Router"]
+    
+    Router -->|"Single File"| LooseFilePlugin[LooseFilePlugin]
+    Router -->|Archive| ArchivePlugin[ArchiveProjectPlugin]
+    Router -->|Directory| DirPlugin[DirectoryProjectPlugin]
+    
+    subgraph "Common Utilities"
+        GeoConv["GeometryConverter (wraps stl23mf)"]
+        ImgProc[ImageProcessor]
+        MetaGen[MetadataGenerator]
+    end
+    
+    LooseFilePlugin --> GeoConv
+    ArchivePlugin --> MetaGen
+    DirPlugin --> ImgProc
