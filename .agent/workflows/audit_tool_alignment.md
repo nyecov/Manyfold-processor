@@ -131,17 +131,21 @@ This meta-workflow ensures that `.agent/tools/` scripts are properly integrated,
 | **Exit Codes** | Does the script use `exit(0)` for pass and `exit(1)` for fail? |
 | **Directories Scanned** | Does the script scan the same directories the workflow lists? |
 
-### 5.2 Mapping Table
+### 5.2 Mapping Table (Source of Truth: `//! Workflow:` tag)
+The agent should verify that each tool contains a `//! Workflow: <path>` tag that matches its intent.
 
-| Tool | Workflow | Key Logic to Verify |
-|------|----------|---------------------|
-| `audit_dependencies.rs` | `audit_dependencies.md` | Scans `.agent/skills/`, parses `requires:` YAML |
-| `check_gherkin.rs` | `audit_gherkin.md` | Checks `tests/`, counts `Scenario:`, limit = 5 |
-| `check_links.rs` | `maintenance_links.md` | Scans `.agent/`, `docs/`, `notes/`, `tests/`, flags `C:/` |
-| `check_consistency.rs` | `audit_consistency.md` | Scans for `TODO`, `TBD`, `FIXME`, `PLACEHOLDER` |
-| `check_constants.rs` | `audit_constants.md` | Checks against `constants.yml` magic values |
-| `check_context.rs` | `audit_context.md` | Checks skill sizes, missing SKILL.md, annex README |
-| `check_infrastructure.rs` | `audit_infrastructure.md` | Checks `compose.yml`, `Dockerfile`, `Cargo.toml` |
+| Tool | Expected Workflow | Key Logic to Verify |
+|------|-------------------|---------------------|
+| `audit_dependencies.rs` | `/audit_dependencies` | Scans `.agent/skills/`, parses `requires:` YAML |
+| `check_gherkin.rs` | `/audit_gherkin` | Checks `tests/`, counts `Scenario:`, limit = 5 |
+| `check_links.rs` | `/maintenance_links` | Scans `.agent/`, `docs/`, `notes/`, `tests/` |
+| `check_consistency.rs` | `/audit_consistency` | Scans for `TODO`, `TBD`, `FIXME`, `PLACEHOLDER` |
+| `check_constants.rs` | `/audit_constants` | Checks against `constants.yml` magic values |
+| `check_context.rs` | `/audit_context` | Checks skill sizes, missing SKILL.md, annex README |
+| `check_infrastructure.rs` | `/audit_infrastructure` | Checks `compose.yml`, `Dockerfile`, `Cargo.toml` |
+| `sentinel_catalog.rs` | `(Meta)` | Alignment: Ensure it parses `//! Workflow:` tags |
+| `sentinel_dead_code.rs` | `/maintenance_cleanup` | Alignment: Ensure it scans for orphans |
+| `sentinel_metrics.rs` | `/maintenance_metrics` | Alignment: Ensure it parses `.agent/metrics/audit_log.csv` |
 
 ### 5.3 Drift Detection
 
