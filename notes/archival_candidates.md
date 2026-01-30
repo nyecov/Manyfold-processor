@@ -20,4 +20,4 @@
 *   [ ] notes\token_efficiency_analysis_v8_headless_script.md
 *   [ ] notes\token_efficiency_improvement_plan.md
 *   [ ] notes\token_efficiency_milestone.md
-*   [ ] notes\v1_dockerhub_roadmap.md
+*   [x] notes\v1_dockerhub_roadmap.md
