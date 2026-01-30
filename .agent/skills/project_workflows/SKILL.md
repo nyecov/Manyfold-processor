@@ -47,3 +47,12 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 ### Standards
 *   Always use relative paths in documentation.
 *   Follow the "Strategy vs. Reference" semantic model.
+
+### Feedback Requirements
+> [!IMPORTANT]
+> **Mandatory Feedback**: After completing each atomic step, the agent MUST provide a brief status update to the user:
+> *   ✅ **PASS** or ❌ **FAIL** indicator
+> *   Summary of findings (1-2 lines max)
+> *   Any blocking issues requiring attention
+>
+> This ensures visibility into workflow progress and allows early intervention if issues arise.

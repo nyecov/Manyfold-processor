@@ -22,6 +22,13 @@ This skill governs the deployment and optimization of the Manyfold Processor on 
 *   **NPU**: rknpu2 (6 TOPS)
 *   **Storage**: SATA SSDs + RAM Drive opportunities
 
+### Network Access
+| Parameter | Value |
+| :-- | :-- |
+| **IP Address** | `192.168.2.2` |
+| **SSH Port** | `22` |
+| **SSH Command** | `ssh dev@192.168.2.2` |
+
 ## 2. Optimization Rules
 
 ### A. Memory Management (RAM Disk)

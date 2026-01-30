@@ -26,6 +26,15 @@ This project is developed **solely by a single developer** with aggressive **AI 
 *   ⚙️ Implement well-defined **workflows** (Atomic + Orchestrated)
 *   🤖 Build an improved **AI agent skill set** for consistent quality
 
+### v1.0 Goals
+*   🐳 **DockerHub Publication**: Publish image to `nyecov/manyfold-processor`
+*   🏗️ **Multi-Architecture**: Build for `linux/arm64` + `linux/amd64` via `docker buildx`
+*   🔄 **CI/CD Pipeline**: GitHub Actions for automated builds on tag push
+*   📖 **End-User Documentation**: README with pull/run instructions
+
+> [!TIP]
+> See [notes/v1_dockerhub_roadmap.md](../../notes/v1_dockerhub_roadmap.md) for detailed technical preparations.
+
 ## Overview
 A standalone utility for processing 3D models for Manyfold, designed to run on the Radxa Rock 5 ITX.
 
