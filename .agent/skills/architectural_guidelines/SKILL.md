@@ -43,7 +43,7 @@ The system is delivered as a single cohesive unit, optimized for Docker on Radxa
 1.  **File Monitor**: Watches the `/input` directory for changes.
 2.  **Processing Pipeline**:
     *   **Router**: Determines method (File vs Directory vs Archive).
-    *   **Geometry Engine**: `stl23mf` logic (integrated or internal module) for mesh conversion and merging.
+    *   **Geometry Engine**: Internal Rust modules for mesh conversion and merging.
     *   **Asset Processor**: Handling images and other assets.
 3.  **API Client**: Manages authentication and communication with the Manyfold API.
 4.  **WebUI Backend**: Serves the frontend interface and handles user control.
@@ -60,3 +60,32 @@ The system is delivered as a single cohesive unit, optimized for Docker on Radxa
 *   **Primary Language**: Rust.
 *   **Core Platform**: Docker on Radxa Rock 5 ITX (Linux/Arm64).
 *   **Separation of Concerns**: The Processor sees Manyfold as a black box accessed via API.
+## 6. Multi-Platform Strategy
+
+While the Radxa Rock 5 ITX is the primary target, the system must run on generic hardware (AMD64, Raspberry Pi, etc.).
+
+### The "Tiered Support" Model
+
+1.  **Tier 1: Radxa Rock 5 (Target)**
+    *   **Features**: NPU Inference, RGA Image Processing, RAM Drive heavy usage.
+    *   **Condition**: Detected RK3588 SoC + `/dev/rga` present.
+
+2.  **Tier 2: Generic High-Power (AMD64 / Modern ARM64)**
+    *   **Features**: CPU Inference (ONNX Runtime), Software Image Processing (image-rs), Standard Disk I/O (if RAM limited).
+    *   **Condition**: Variable hardware.
+    *   **Requirement**: "Graceful Degradation". The application must **not crash** if `/dev/rga` is missing; it must switch to the CPU implementation.
+
+3.  **Tier 3: Legacy/Low-Power (ARMv7 / Pi 2)**
+    *   **Features**: Basic file monitoring, simple metadata extraction. Heavy 3D/ML tasks may be disabled or strictly serial.
+    *   **Condition**: 32-bit architecture or < 2GB RAM.
+
+### Implementation Mandate
+### Implementation Mandate
+*   **Memory Management (Tier 3 Critical)**: 
+    *   **Minimum Guarantee (Reservation)**: The container **MUST** be deployed with a memory reservation of at least **750MB**.
+        *   Docker Flag: `--memory-reservation=750m`
+    *   **Upper Bound (Limit)**: A Hard limit is **REQUIRED** to protect the host OS from OOM kills.
+        *   Docker Flag: `--memory=2g` (adjust based on host total, but must exist).
+    *   **Internal Check**: The application MUST still check available RAM on startup and exit if < 750MB, as a double-check against misconfiguration.
+*   **Runtime Detection**: Use dynamic loading (`libloading`) or feature flags for hardware libraries (`librga`) to ensure the binary runs on systems where these libraries are absent.
+*   **Abstract Traits**: Define traits like `ImageProcessor` with implementations for `RgaProcessor` and `CpuProcessor`.

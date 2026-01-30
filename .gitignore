@@ -18,3 +18,10 @@ desktop.ini
 *.log
 _temp_*/
 tmp/
+Manyfold_reference/
+
+
+
+# Added by cargo
+
+/target

@@ -115,4 +115,32 @@ async fn upload_and_create(base_url: &str, token: &str, file_path: &str) -> Resu
 ## 6. Development Tips
 
 *   **Routes**: To see all routes in development, clone Manyfold and run `bin/rails routes`.
-*   **Tus Check**: Verify Tus is running by checking `OPTIONS /upload` (should return Tus-Version header).
+## 7. Resilience & Reliability
+
+The API client must be robust against network glitches and downtime of the Manyfold instance.
+
+### A. Retry Policy (Exponential Backoff)
+*   **Requirement**: All non-mutating (GET) and idempotent (PUT/DELETE) requests MUST retry on failures (5xx or Timeout).
+*   **Strategy**: Exponential Backoff + Jitter.
+    *   Base delay: 500ms
+    *   Max retries: 5
+*   **Uploads**: Large file uploads (Tus) must use the `tus_client`'s built-in resume capability. If that fails, restart the *chunk*, not the whole file.
+
+### B. Circuit Breaker
+*   **Scenario**: If Manyfold returns `503 Service Unavailable` or connection refused repeatedly.
+*   **Action**: Stop all outgoing requests for a cooldown period (e.g., 60 seconds) to prevent cascading failures.
+*   **Implementation**: Use `reqwest-middleware` with retry middleware.
+
+### C. Example Configuration
+```rust
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
+
+pub fn build_resilient_client() -> ClientWithMiddleware {
+    let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+    ClientBuilder::new(reqwest::Client::new())
+        .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+        .build()
+}
+```
+
