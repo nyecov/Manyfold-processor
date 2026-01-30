@@ -43,6 +43,7 @@ To prevent structural degradation and "documentation rot":
     *   **API Step Definitions** (`*_API_steps.rs`) MUST confine logic to protocol-level, data-integrity, and state-machine verification.
     *   **Twin Logic Sharing**: Logic shared between layers must be abstracted into the `world.rs` or a shared helper module, never duplicated across layer-specific files.
 *   **Dead Code Elimination**: Strictly forbid unused imports, functions, or variables (implicitly handled by `clippy`, but enforced as a project mandate).
+    *   **Orphan Documentation**: The `sentinel_dead_code` tool actively flags documentation files that are not linked from the knowledge graph. These must be archived or linked.
 
 ## 6. Documentation Quality
 *   **Mandate**: All public modules and non-trivial functions should have doc comments (`///`).

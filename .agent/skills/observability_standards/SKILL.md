@@ -21,6 +21,11 @@ To ensure debuggability on headless or remote devices, logs must be structured a
 ## 3. Panics & Fatal Errors
 *   **Governance**: All fatal panics MUST be intercepted and logged as a structured "FATAL" event before the process terminates.
 
+## 4. Headless Efficiency (Context Cost)
+*   **Target**: Atomic operations (e.g., Audits) should output **< 2500 bytes** (approx 500 tokens) on success.
+*   **Governor**: The `sentinel_metrics` tool tracks this compliance in `.agent/metrics/audit_log.csv`.
+*   **Policy**: "Silent Success". Tools should output minimal `[OK]` status when passing, and reserve verbosity for `[XX]` failures.
+
 ---
 
 ## See Also

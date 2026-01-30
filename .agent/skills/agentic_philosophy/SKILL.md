@@ -60,7 +60,15 @@ Workflows use a **Hybrid Model** where scripts handle atomic checks and agents h
 | Marker | Type | Cost | Coverage |
 |--------|------|------|----------|
 | 🔧 | Script | ~0 tokens | Atomic, structural checks |
+| 🔧 | Script | ~0 tokens | Atomic, structural checks |
 | 🧠 | Agent-Only | Variable | Semantic, cross-reference analysis |
+
+### Context Cost (The Invisible Tax)
+*   **Definition**: The number of bytes an agent must read to understand tool output.
+*   **Metric**: `1000 bytes ≈ 250 tokens`.
+*   **Principle**: "Silence is Efficiency".
+    *   **Success**: Should be nearly silent (`[OK] Passed`).
+    *   **Failure**: Should be verbose to aid debugging.
 
 ### Correctness Over Efficiency
 > **Mandate**: Scripts ONLY substitute atomic steps they can actually perform. Never claim a script covers semantic analysis — correctness trumps token savings.
