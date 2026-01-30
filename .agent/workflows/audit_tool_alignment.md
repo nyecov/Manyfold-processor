@@ -1,5 +1,5 @@
 ---
-description: Meta-governance workflow to verify alignment between agent tools and documentation. AGENT-ONLY - No headless scripting allowed.
+description: Meta-governance workflow to verify alignment between agent tools and documentation. Hybrid: Headless Pre-check + Agent Analysis.
 ---
 
 # Meta Audit: Tool-Documentation Alignment
@@ -11,6 +11,29 @@ description: Meta-governance workflow to verify alignment between agent tools an
 
 > [!CAUTION]
 > **AGENT-ONLY WORKFLOW**: This workflow MUST be executed entirely by the AI agent. It must NEVER be replaced with a headless script. The analysis, correction, and verification require semantic understanding that only the agent can provide.
+
+<!-- depends: .agent/tools/src/bin/check_tool_alignment_skip.rs -->
+
+---
+
+## Skip Condition (Headless Pre-Check)
+
+// turbo
+```powershell
+.agent\tools\target\release\check_tool_alignment_skip.exe
+```
+
+| Exit Code | Meaning | Action |
+|-----------|---------|--------|
+| `0` | Hash matches, cached PASS | **SKIP entire workflow** → Return success |
+| `1` | Hash matches, cached FAIL | SKIP, but **report cached issues** to user |
+| `2` | Hash mismatch or no cache | **Proceed with full audit** below |
+
+> [!NOTE]
+> This is the ONLY headless component of an otherwise agent-only workflow.
+> After completing the full audit (Sections 1-6), the agent MUST write to `.agent/tools/.audit_cache`.
+
+---
 
 ## Prerequisites
 
@@ -164,6 +187,27 @@ After corrections:
 
 ---
 
+## 7. Write Audit Cache
+
+After successful completion of all steps:
+
+1.  **Determine result**: `PASS` if no issues found or all corrected; `FAIL` if issues remain.
+2.  **Write cache file** to `.agent/tools/.audit_cache`:
+
+```yaml
+# Auto-generated - Do not edit manually
+version: 1
+timestamp: "<current ISO 8601 timestamp>"
+hash: "<output from check_tool_alignment_skip.exe>"
+result: "PASS"  # or "FAIL"
+findings: []    # List any unresolved issues
+```
+
+> [!IMPORTANT]
+> This step enables the Skip Condition for future runs. Without writing the cache, every run will require full audit.
+
+---
+
 ## Why No Headless Script?
 
 | Aspect | Headless Script | Agent-Only |
@@ -174,3 +218,4 @@ After corrections:
 | **New Tool Discovery** | Must be pre-programmed | Can adapt to changes |
 
 This workflow is the **governance layer** that ensures all other headless scripts remain valid.
+

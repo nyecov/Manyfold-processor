@@ -90,9 +90,9 @@ The ultimate verification tool for the Manyfold Processor project.
 
 | Scenario | Tokens |
 |----------|--------|
-| First Run (All Changed) | ~65,000-80,000 |
-| Subsequent Run (Nothing Changed) | ~25,000-40,000 |
-| Targeted Run (Some Changed) | ~40,000-55,000 |
+| First Run (All Changed) | ~63,000 |
+| Subsequent Run (Nothing Changed) | **~350** (Step -1 & Pre-Checks) |
+| Targeted Run (Some Changed) | ~30,000-45,000 |
 
 ---
 

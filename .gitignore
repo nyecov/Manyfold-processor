@@ -25,3 +25,6 @@ Manyfold_reference/
 # Added by cargo
 
 /target
+
+# Agent Tool Cache (Phase 1.5)
+.agent/tools/.audit_cache

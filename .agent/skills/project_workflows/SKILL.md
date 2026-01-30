@@ -31,7 +31,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 > [!CAUTION]
 > This workflow MUST be executed before any audit or maintenance workflow that uses "Headless First".
 
-*   **`/audit_tool_alignment`**: **[AGENT-ONLY]** Verifies `.agent/tools/` scripts align with workflows. **No downstream workflow is valid until this passes.**
+*   **`/audit_tool_alignment`**: **[HYBRID]** Verifies `.agent/tools/` scripts align with workflows. Uses hash-based skip to avoid unnecessary audits. **No downstream workflow is valid until this passes.**
 
 ---
 
@@ -93,6 +93,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_context.exe` | `/audit_context` | File sizes, structure |
 | `check_infrastructure.exe` | `/audit_infrastructure` | compose/Dockerfile presence |
 | `check_workflow_skip.exe` | (Meta) | Git change detection |
+| `check_tool_alignment_skip.exe` | `/audit_tool_alignment` | Hash-based skip (Phase 1.5) |
 
 ### Workflow Format
 ```markdown

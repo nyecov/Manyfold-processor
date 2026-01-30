@@ -73,6 +73,20 @@ Workflows use a **Hybrid Model** where scripts handle atomic checks and agents h
 
 **Location**: All governance scripts reside in `.agent/tools/`.
 
+### Cache-Based Skip Pattern
+
+For expensive agent-only workflows, a **hash-based cache** can avoid re-execution:
+
+1.  **Pre-Check Script**: Computes content hash, compares to cache
+2.  **If Match**: Skip workflow, return cached result (~0 tokens)
+3.  **If Mismatch**: Full agent execution, then write new cache
+4.  **Guarantee**: Script only checks hash — cannot make semantic decisions
+
+This pattern applies to:
+*   `/audit_tool_alignment` — Root workflow, costs ~27,000 tokens per run
+*   Uses `check_tool_alignment_skip.exe` for hash comparison
+*   Writes to `.agent/tools/.audit_cache` after successful audit
+
 ---
 
 ## Related Links

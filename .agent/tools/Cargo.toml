@@ -8,6 +8,9 @@ description = "AI Agent governance tools for self-healing and token efficiency."
 walkdir = "2.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.9"
+sha2 = "0.10"
+hex = "0.4"
+chrono = "0.4"
 
 [[bin]]
 name = "audit_dependencies"
@@ -40,3 +43,8 @@ path = "src/bin/check_infrastructure.rs"
 [[bin]]
 name = "check_workflow_skip"
 path = "src/bin/check_workflow_skip.rs"
+
+[[bin]]
+name = "check_tool_alignment_skip"
+path = "src/bin/check_tool_alignment_skip.rs"
+
