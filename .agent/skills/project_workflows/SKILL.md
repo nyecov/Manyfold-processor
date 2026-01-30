@@ -26,6 +26,8 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 ### Maintenance Tools (Active)
 *   **`/maintenance_links`**: Synchronizes relative links across the project.
 *   **`/maintenance_c4`**: Updates Mermaid-based C4 architecture diagrams.
+*   **`/maintenance_annex_migration`**: Audits skills/docs/notes for content to archive.
+*   **`/maintenance_annex_review`**: Review annex content for candidate retrieval (move to active) or staleness updates.
 
 ---
 
@@ -56,3 +58,9 @@ This project utilizes a hierarchical suite of **Atomics** (independent standalon
 > *   Any blocking issues requiring attention
 >
 > This ensures visibility into workflow progress and allows early intervention if issues arise.
+
+---
+
+## See Also
+*   **Historical Context**: [annex](../../annex/README.md)
+*   **Linking Standards**: [kb_linking](../kb_linking/SKILL.md)

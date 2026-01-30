@@ -39,7 +39,7 @@ This project is developed **solely by a single developer** with aggressive **AI 
 A standalone utility for processing 3D models for Manyfold, designed to run on the Radxa Rock 5 ITX.
 
 ## Key References
-*   **Hardware**: See [developer_hardware_specs](../developer_hardware_specs/SKILL.md) skill.
+*   **Historical Context**: See [annex](../../annex/README.md) for decision logs and hardware snapshots.
 *   **Architecture**: See [architectural_guidelines](../architectural_guidelines/SKILL.md) and [c4_model](../c4_model/SKILL.md) skills.
 *   **Deployment**: See [deploy_on_radxa_rock5](../deploy_on_radxa_rock5/SKILL.md) skill.
-*   **Workshop Notes**: See the [workshop_log.md](../../notes/workshop_log.md) for hardware context and decisions.
+*   **Workshop Notes**: See [2026-01-30_workshop_notes.md](../../annex/2026-01-30_workshop_notes.md) for historical hardware context.

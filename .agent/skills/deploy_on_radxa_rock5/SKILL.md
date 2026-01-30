@@ -1,6 +1,8 @@
 ---
 name: Deploy on Radxa Rock 5 ITX
 description: Guidelines and checks for ensuring the application runs optimally on the Radxa Rock 5 ITX (RK3588) hardware.
+requires:
+  - environment_constraints  # Memory/resource values
 ---
 
 # Radxa Rock 5 ITX Deployment Standards
@@ -83,6 +85,6 @@ When asked to "Deploy" or "Validate Compatibility":
 ---
 
 ## See Also
-*   **Context**: [developer_hardware_specs](../developer_hardware_specs/SKILL.md) (Windows development environment specs).
+*   **Historical Context**: [annex](../../annex/README.md) (decision logs, hardware snapshots)
 *   **Architecture**: [architectural_guidelines](../architectural_guidelines/SKILL.md)
 *   **C4 Model**: [c4_model](../c4_model/SKILL.md)

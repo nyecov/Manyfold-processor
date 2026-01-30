@@ -27,3 +27,7 @@ mock-hardware = []  # Enable mock HAL implementations for Tier 1 simulation
 cucumber = "0.20"
 futures = "0.3"
 
+[[test]]
+name = "cucumber_runner"
+harness = false
+

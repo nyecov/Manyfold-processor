@@ -1,4 +1,10 @@
-# Workshop Notes & Hardware Context
+# Workshop Notes: Hardware Context (User Lab)
+
+**Captured**: 2026-01-30
+**Original Location**: `notes/workshop_log.md`
+**Type**: Historical Context / Decision Log
+
+---
 
 ## 🛠️ Available Hardware (User Lab)
 1.  **Raspberry Pi 2**:
@@ -17,7 +23,7 @@
 ## 📝 Workshop Items
 ### 1. Logging & Monitoring
 *   **Decision**: Require structured logging (JSON in production) and Health Checks.
-*   **Action**: Created [logging_and_monitoring](../.agent/skills/logging_and_monitoring/SKILL.md).
+*   **Action**: Created [logging_and_monitoring](../skills/logging_and_monitoring/SKILL.md).
 
 ### 2. Memory Managment
 *   **Constraint**: 750MB specific requirement.
@@ -33,5 +39,5 @@
 ---
 
 ## See Also
-*   **Deployment Rules**: [deploy_on_radxa_rock5](../.agent/skills/deploy_on_radxa_rock5/SKILL.md) (RK3588 optimizations).
-*   **Hardware Context**: [developer_hardware_specs](../.agent/skills/developer_hardware_specs/SKILL.md) (Development environment specs).
+*   **Deployment Rules**: [deploy_on_radxa_rock5](../skills/deploy_on_radxa_rock5/SKILL.md) (RK3588 optimizations).
+*   **Historical Context**: [annex README](./README.md)

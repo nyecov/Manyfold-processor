@@ -1,0 +1,59 @@
+# Canonical Constants for Manyfold Processor
+# All skills should reference this file for these values
+# 
+# Usage: Skills with `requires:` dependencies should check this file
+# for authoritative values rather than duplicating them.
+
+# -----------------------------------------------------------------------------
+# Memory & Resource Constraints
+# -----------------------------------------------------------------------------
+memory:
+  reservation: 1G           # Guaranteed allocation on container start
+  limit: 5G                 # Maximum container memory
+  free_headroom: 750M       # Minimum free RAM required on host
+
+# -----------------------------------------------------------------------------
+# Network Configuration (Target Hardware)
+# -----------------------------------------------------------------------------
+network:
+  radxa_ip: 192.168.2.2     # Radxa Rock 5 ITX default IP
+  ssh_user: dev             # SSH username
+  ssh_port: 22              # SSH port
+  web_ui_port: 8080         # Dashboard/health endpoint
+
+# -----------------------------------------------------------------------------
+# Version Information
+# -----------------------------------------------------------------------------
+version:
+  current: 0.3.0            # Current project version
+  rust_edition: 2021        # Rust edition for Cargo.toml
+  docker_rust: 1.85         # Rust version in Dockerfile
+
+# -----------------------------------------------------------------------------
+# Docker Configuration
+# -----------------------------------------------------------------------------
+docker:
+  image_name: manyfold-processor
+  container_name: manyfold-processor
+  volumes:
+    input: /input           # Watch directory
+    output: /output         # Processed assets
+    config: /config         # Persistent configs
+    temp: /app/temp         # RAM disk mount (tmpfs)
+
+# -----------------------------------------------------------------------------
+# Tiering (Hardware Deployment)
+# -----------------------------------------------------------------------------
+tiers:
+  tier1:
+    name: Radxa Rock 5 ITX
+    arch: linux/arm64
+    primary: true
+  tier2:
+    name: Generic Server / Docker
+    arch: linux/amd64
+    primary: false
+  tier3:
+    name: Minimal Hardware
+    arch: linux/arm64
+    memory_floor: 1G

@@ -19,5 +19,10 @@ This suite performs a comprehensive audit of the project's documentation by invo
 *   Verify that there are no internal contradictions or conflicting mandates between peer documents.
 *   📢 **Report**: Consistency audit status
 
-## 3. Findings Consolidation
-*   Synthesize reports from both atomics into a unified documentation health overview.
+## 3. Annex Review
+*   Invoke `/maintenance_annex_migration` (Archive Candidate Scan)
+*   Invoke `/maintenance_annex_review` (Content Revival Scan)
+*   📢 **Report**: Annex health & migration opportunities
+
+## 4. Findings Consolidation
+*   Synthesize reports from all atomics into a unified documentation health overview.

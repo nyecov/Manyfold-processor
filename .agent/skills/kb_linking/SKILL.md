@@ -1,6 +1,8 @@
 ---
 name: Knowledge Base Linking
 description: Standards for internal documentation linking using relative paths and structured relationship types.
+requires:
+  - project_workflows  # Workflow orchestration context
 ---
 
 # Knowledge Base Linking Standards
@@ -35,12 +37,31 @@ Links based on shared specific context that may not follow standard vertical or 
 *   **Usage**: When a document mentions a specific bug, hardware edge case, or specific decision that is detailed elsewhere.
 *   **Constraint**: Use only when the connection is critical for understanding the current topic and not covered by standard roles.
 
-## 3. Automation: Synchronization
-*   Always use the `/sync_kb_links` workflow after creating new files or significant sections to ensure the "web of knowledge" remains connected.
-*   The workflow ensures that mentions are turned into links and that paths are correctly relativized.
+## 3. Agent-Effective Patterns (v0.3+)
+
+### The `requires:` Field
+Skills should declare explicit dependencies in YAML frontmatter:
+```yaml
+---
+name: My Skill
+description: ...
+requires:
+  - environment_constraints  # Memory values
+  - another_skill            # Why it's needed
+---
+```
+**Agent Benefit**: Enables automated context loading.
+
+### Canonical Constants Reference
+For shared values (memory limits, IPs, ports), reference the canonical source:
+```
+.agent/constants.yml
+```
+**Pattern**: Don't duplicate values in skills—reference `constants.yml`.
 
 ---
 
 ## See Also
-*   **Workflows**: [sync_kb_links](../../workflows/sync_kb_links.md)
+*   **Historical Context**: [annex](../../annex/README.md)
+*   **Constants**: [constants.yml](../../constants.yml)
 *   **Project Management**: [project_workflows](../project_workflows/SKILL.md)

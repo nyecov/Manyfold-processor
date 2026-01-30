@@ -1,5 +1,5 @@
 # Builder stage
-FROM --platform=$BUILDPLATFORM rust:1.84-slim-bookworm as builder
+FROM --platform=$BUILDPLATFORM rust:1.85-slim-bookworm AS builder
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM

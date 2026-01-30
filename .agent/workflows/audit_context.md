@@ -6,8 +6,8 @@ description: Semantic audit of skill organization, chopping, and Strategy vs. Re
 
 This standalone workflow evaluates the semantic organization of the project's knowledge base.
 
-## 1. Skills Inventory
-*   List all files in `.agent/skills/`.
+## 1. Skills & Annex Inventory
+*   List all files in `.agent/skills/` and `.agent/annex/`.
 *   Identify primary functional domains (e.g., Geometry, API, Testing, Operations).
 
 ## 2. Cluster Analysis
@@ -21,9 +21,14 @@ This standalone workflow evaluates the semantic organization of the project's kn
 *   Evaluate if a skill is too broad (serving too many purposes).
 *   Check if information is scattered across too many small files (fragmentation).
 
-## 4. Logical Alignment
+## 4. Annex Validation
+*   **Content Type**: Verify annex entries are historical (decision logs, snapshots, post-mortems).
+*   **Skill Overlap**: Flag if annex content duplicates active skill content.
+*   **Migration Check**: Identify any skills that are static snapshots and should move to annex.
+
+## 5. Logical Alignment
 *   Ensure that the "Source of Truth" for a specific topic is clear.
 *   Flag contradictions between peer skills.
 
-## 5. Report
+## 6. Report
 *   Suggest specific content migrations or skill merges/splits for better clarity.

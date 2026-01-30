@@ -1,9 +1,9 @@
----
-name: Developer Hardware Specs
-description: Specifications and context for the Windows development environment.
----
+# Developer Hardware Snapshot: Windows PC
 
-# System Specifications: Windows PC
+**Captured**: 2026-01-30
+**Type**: Static snapshot (historical reference)
+
+---
 
 > [!IMPORTANT]
 > **Development Environment**: This system is utilized for **development** purposes. It may be used for running and testing the project, but it **should not** be used as a benchmark for expected hardware level.
@@ -49,5 +49,5 @@ description: Specifications and context for the Windows development environment.
 ---
 
 ## See Also
-*   **Target Hardware**: [deploy_on_radxa_rock5](../deploy_on_radxa_rock5/SKILL.md) (Rock 5 ITX deployment guidelines).
-*   **Project Context**: [project_details](../project_details/SKILL.md)
+*   **Target Hardware**: [deploy_on_radxa_rock5](../skills/deploy_on_radxa_rock5/SKILL.md)
+*   **Project Context**: [project_details](../skills/project_details/SKILL.md)

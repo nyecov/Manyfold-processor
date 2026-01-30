@@ -1,6 +1,8 @@
 ---
 name: C4 Model
 description: Architectural visualization framework using the C4 model (Context, Containers, Components, Code).
+requires:
+  - architectural_guidelines  # Core architecture definitions
 ---
 
 # C4 Model in Manyfold Processor

@@ -1,6 +1,9 @@
 ---
 name: Deployment Operations
 description: Technical manual for deploying and managing the Manyfold Processor container.
+requires:
+  - environment_constraints  # Memory/resource values
+  - deploy_on_radxa_rock5    # Target hardware specs
 ---
 
 # Deployment Operations
