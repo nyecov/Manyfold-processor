@@ -102,6 +102,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_tool_alignment_skip.exe` | `/audit_tool_alignment` | Hash-based skip detection for /audit_tool_alignment |
 | `check_workflow_skip.exe` | `/audit_workflow` | Checks git status for workflow dependencies |
 | `sentinel_catalog.exe` | `(Meta)` | Metadata Sentinel: Tool Catalog Synchronizer |
+| `sentinel_dead_code.exe` | `(Meta)` | Dead Code Sentinel: The Reaper |
 
 ### Workflow Format
 ```markdown

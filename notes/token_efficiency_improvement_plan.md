@@ -365,18 +365,22 @@ Enforce health checks before every git commit.
 
 ---
 
-## Phase 4: Sentinel Automation (Lower Priority)
+## Phase 4: Sentinel Automation (Lower Priority) ✅ DONE
 
 ### Goal
-Implement proactive watchers for drift detection.
+Implement proactive watchers for drift detection and automated maintenance.
 
-| Sentinel | Function |
-|----------|----------|
-| **Catalog Sentinel** | Auto-update `project_workflows` on file creation |
-| **Dead Skill Detector** | Flag skills with no references |
-| **Orphan Doc Detector** | Flag docs not linked from skills |
+### Implementation
+1.  **Catalog Sentinel** (`sentinel_catalog.exe`):
+    *   **Logic**: Scans tool binaries and updates `project_workflows/SKILL.md`.
+    *   **Integration**: Pre-Commit Hook (Strategy A). blocks commits if docs are stale.
+2.  **Dead Code Sentinel** (`sentinel_dead_code.exe`):
+    *   **Logic**: Scans knowledge base graph to find orphan files.
+    *   **Integration**: `/maintenance_cleanup` workflow (Strategy B). User/Agent runs periodically.
 
-**Implementation**: File system watcher (Rust `notify` crate) or Git hook.
+### Results (Verified 2026-01-30)
+*   **Self-Healing Docs**: The Binary Registry is now guaranteed to be correct by the git hook.
+*   **Orphan Detection**: Automated report generation for archival candidates.
 
 ---
 
