@@ -5,19 +5,9 @@
 
 *   [ ] docs\Agentic_Philosophy.md
 *   [ ] docs\Language_Analysis.md
-*   [ ] notes\alignment_report.md
 *   [ ] notes\phase_2_analysis.md
-*   [ ] notes\phase_4_integration_analysis.md
-*   [ ] notes\phase_4_sentinel_analysis.md
-*   [ ] notes\phase_4_sentinel_plan.md
+*   [ ] notes\phase_5_plan.md
 *   [ ] notes\skills_workflows_improvement_plan.md
-*   [ ] notes\token_efficiency_analysis_v2.md
-*   [ ] notes\token_efficiency_analysis_v3.md
-*   [ ] notes\token_efficiency_analysis_v4.md
-*   [ ] notes\token_efficiency_analysis_v5.md
-*   [ ] notes\token_efficiency_analysis_v6.md
-*   [ ] notes\token_efficiency_analysis_v7_phase2.md
-*   [ ] notes\token_efficiency_analysis_v8_headless_script.md
 *   [ ] notes\token_efficiency_improvement_plan.md
 *   [ ] notes\token_efficiency_milestone.md
 *   [x] notes\v1_dockerhub_roadmap.md

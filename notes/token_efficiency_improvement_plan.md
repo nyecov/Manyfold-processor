@@ -394,6 +394,10 @@ Implement proactive watchers for drift detection and automated maintenance.
 ### Goal
 Track real-world token usage for validation via "Context Cost" (Output Bytes).
 
+### Key Documents
+*   [**Plan**](phase_5_plan.md)
+*   [**Baseline**](token_efficiency_milestone.md)
+
 ### Implementation
 1.  **Instrumentation**: `run_full_audit.sh` logs [Timestamp, Bytes, ExitCode] to `.agent/metrics/audit_log.csv`.
 2.  **Analysis**: `sentinel_metrics.exe` reads the log and analyzes trends vs baseline (Target: < 2500 bytes).
