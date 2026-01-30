@@ -1,3 +1,4 @@
+//! Verifies Gherkin scenario quality
 use agent_tools::prelude::*;
 
 fn main() {

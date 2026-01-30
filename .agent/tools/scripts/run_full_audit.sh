@@ -103,6 +103,22 @@ else
     fi
 fi
 
+# 4. Phase 4 Sentinels
+echo -n "[..] [Sentinel: Catalog] Running..."
+# Allowed to fail (Exit 1 means "Updated", User must stage)
+if "$TOOLS_DIR/sentinel_catalog" > $LOG_DEST 2>&1; then
+    echo -e "\r[OK] [Sentinel: Catalog] Aligned    "
+else
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        echo -e "\r[XX] [Sentinel: Catalog] Catalog Updated (Please Stage Changes)"
+        FAILED=1
+    else
+        echo -e "\r[XX] [Sentinel: Catalog] Error (Exit $RET)"
+        FAILED=1
+    fi
+fi
+
 echo "-------------------------------------"
 if [ $FAILED -eq 0 ]; then
     echo "[OK] SYSTEM HEALTHY (Ready for Commit)"

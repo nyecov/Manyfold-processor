@@ -1,3 +1,4 @@
+//! Validates 'requires:' fields in skills
 use std::collections::HashSet;
 use serde::Deserialize;
 use agent_tools::prelude::*;

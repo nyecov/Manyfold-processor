@@ -1,3 +1,4 @@
+//! Checks logical integrity (TODOs, TBDs) across KB
 use agent_tools::prelude::*;
 
 fn main() {

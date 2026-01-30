@@ -1,3 +1,4 @@
+//! Checks for absolute paths and broken local links
 use agent_tools::prelude::*;
 
 fn main() {

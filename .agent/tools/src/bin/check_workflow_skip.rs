@@ -1,3 +1,4 @@
+//! Checks git status for workflow dependencies
 use agent_tools::prelude::*;
 use std::process::Command;
 use std::collections::HashMap;

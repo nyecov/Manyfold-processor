@@ -1,3 +1,4 @@
+//! Evaluates semantic organization (Strategy vs Reference)
 use agent_tools::prelude::*;
 
 fn main() {

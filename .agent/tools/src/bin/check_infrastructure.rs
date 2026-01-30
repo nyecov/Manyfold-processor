@@ -1,3 +1,4 @@
+//! Checks codebase compliance (Docker, Cargo, Python)
 use agent_tools::prelude::*;
 
 fn main() {

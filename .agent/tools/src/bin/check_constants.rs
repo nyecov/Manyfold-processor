@@ -1,3 +1,4 @@
+//! Checks for hardcoded values vs constants.yml
 use agent_tools::prelude::*;
 use serde::Deserialize;
 

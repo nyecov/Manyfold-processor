@@ -92,15 +92,16 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 ### Binary Registry
 | Tool | Workflow | 🔧 Covers |
 |------|----------|-----------|
-| `audit_dependencies.exe` | `/audit_dependencies` | Broken `requires:` links |
-| `check_gherkin.exe` | `/audit_gherkin` | Scenario count >5 |
-| `check_links.exe` | `/maintenance_links` | Absolute paths |
-| `check_consistency.exe` | `/audit_consistency` | TODOs/TBDs/FIXMEs |
-| `check_constants.exe` | `/audit_constants` | Known magic values |
-| `check_context.exe` | `/audit_context` | File sizes, structure |
-| `check_infrastructure.exe` | `/audit_infrastructure` | compose/Dockerfile presence |
-| `check_workflow_skip.exe` | (Meta) | Git change detection |
-| `check_tool_alignment_skip.exe` | `/audit_tool_alignment` | Hash-based skip (Phase 1.5) |
+| `audit_dependencies.exe` | `/audit_dependencies` | Validates 'requires:' fields in skills |
+| `check_consistency.exe` | `/audit_consistency` | Checks logical integrity (TODOs, TBDs) across KB |
+| `check_constants.exe` | `/audit_constants` | Checks for hardcoded values vs constants.yml |
+| `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |
+| `check_gherkin.exe` | `/audit_gherkin` | Verifies Gherkin scenario quality |
+| `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
+| `check_links.exe` | `/audit_links` | Checks for absolute paths and broken local links |
+| `check_tool_alignment_skip.exe` | `/audit_tool_alignment` | Hash-based skip detection for /audit_tool_alignment |
+| `check_workflow_skip.exe` | `/audit_workflow` | Checks git status for workflow dependencies |
+| `sentinel_catalog.exe` | `(Meta)` | Metadata Sentinel: Tool Catalog Synchronizer |
 
 ### Workflow Format
 ```markdown
