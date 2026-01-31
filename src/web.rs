@@ -3,7 +3,10 @@ use axum::{
     routing::{delete, get, post, put},
     Extension, Json, Router,
 };
+use image::AnimationDecoder;
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::BufReader;
 use std::{
     collections::HashSet,
     net::SocketAddr,
@@ -107,6 +110,7 @@ pub async fn start_web_server() -> anyhow::Result<()> {
         .route("/api/config/auto-process", get(get_auto_process))
         .route("/api/config/auto-process", put(set_auto_process))
         .route("/api/actions/clear-timeline", post(clear_timeline))
+        .route("/api/actions/process/:filename", post(process_file))
         .route("/api/actions/delete-file/:filename", delete(delete_file))
         .route("/health", get(health_check))
         .layer(Extension(state));
@@ -146,6 +150,142 @@ async fn get_status(Extension(state): Extension<AppState>) -> Json<Status> {
         auto_process_enabled: auto,
         timeline_events: timeline,
     })
+}
+
+async fn process_file(
+    AxumPath(filename): AxumPath<String>,
+    Extension(state): Extension<AppState>,
+) -> impl axum::response::IntoResponse {
+    let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
+    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
+    let input_path = std::path::Path::new(&input_dir).join(&filename);
+
+    // Create output dir if not exists
+    let _ = std::fs::create_dir_all(&output_dir);
+
+    // Validate connection/path
+    if !input_path.exists() {
+        return (
+            axum::http::StatusCode::NOT_FOUND,
+            format!("File not found: {}", filename),
+        );
+    }
+
+    let ext = input_path
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    let timeline_msg;
+
+    // Logic:
+    // If GIF -> Check frames. If > 1, preserve (copy). Else convert.
+    // Else -> Convert to WebP.
+
+    if ext == "gif" {
+        // Check for animation
+        let file = File::open(&input_path).unwrap();
+        let reader = BufReader::new(file);
+        let decoder = image::codecs::gif::GifDecoder::new(reader).unwrap();
+
+        // Count frames (safe heuristic)
+        let frames = decoder.into_frames().collect_frames().unwrap_or_default();
+
+        if frames.len() > 1 {
+            // Animated GIF - Preserve
+            let output_path = std::path::Path::new(&output_dir).join(&filename);
+            match std::fs::copy(&input_path, &output_path) {
+                Ok(_) => {
+                    timeline_msg = format!(
+                        "Processed: {} -> {} (Preserved Animation)",
+                        filename, filename
+                    );
+                }
+                Err(e) => {
+                    return (
+                        axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                        format!("Failed to copy GIF: {}", e),
+                    )
+                }
+            }
+        } else {
+            // Static GIF - Convert to WebP
+            let img = image::open(&input_path)
+                .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+            if let Ok(dynamic_image) = img {
+                let new_filename = format!(
+                    "{}.webp",
+                    std::path::Path::new(&filename)
+                        .file_stem()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                );
+                let output_path = std::path::Path::new(&output_dir).join(&new_filename);
+
+                // Save as WebP
+                // Currently image crate doesn't support saving WebP directly in all versions or via save(), checking capabilities.
+                // Actually image 0.25 supports webp via encoders.
+                // Using save_with_format is easiest if supported.
+
+                match dynamic_image.save_with_format(&output_path, image::ImageFormat::WebP) {
+                    Ok(_) => {
+                        timeline_msg = format!("Processed: {} -> {}", filename, new_filename);
+                    }
+                    Err(e) => {
+                        return (
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("Failed to save WebP: {}", e),
+                        )
+                    }
+                }
+            } else {
+                return img.err().unwrap();
+            }
+        }
+    } else {
+        // Standard Conversion
+        let img = image::open(&input_path);
+        match img {
+            Ok(dynamic_image) => {
+                let new_filename = format!(
+                    "{}.webp",
+                    std::path::Path::new(&filename)
+                        .file_stem()
+                        .unwrap()
+                        .to_str()
+                        .unwrap()
+                );
+                let output_path = std::path::Path::new(&output_dir).join(&new_filename);
+
+                match dynamic_image.save_with_format(&output_path, image::ImageFormat::WebP) {
+                    Ok(_) => {
+                        timeline_msg = format!("Processed: {} -> {}", filename, new_filename);
+                    }
+                    Err(e) => {
+                        return (
+                            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("Failed to save WebP: {}", e),
+                        )
+                    }
+                }
+            }
+            Err(e) => {
+                return (
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Failed to open image: {}", e),
+                )
+            }
+        }
+    }
+
+    // Update Timeline
+    if !timeline_msg.is_empty() {
+        let mut t = state.timeline.lock().unwrap();
+        t.push(timeline_msg);
+    }
+
+    (axum::http::StatusCode::OK, "Processed".to_string())
 }
 
 async fn get_auto_process(Extension(state): Extension<AppState>) -> Json<serde_json::Value> {

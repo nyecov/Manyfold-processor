@@ -16,6 +16,7 @@ services:
       - MANYFOLD_API_URL=${MANYFOLD_API_URL:-http://localhost:3000}
       - MANYFOLD_API_KEY=${MANYFOLD_API_KEY:-}
       - INPUT_DIR=/input
+      - OUTPUT_DIR=/output
     restart: unless-stopped
     deploy:
       resources:
@@ -46,6 +47,7 @@ services:
       - MANYFOLD_API_URL=${MANYFOLD_API_URL:-http://localhost:3000}
       - MANYFOLD_API_KEY=${MANYFOLD_API_KEY:-}
       - INPUT_DIR=/input
+      - OUTPUT_DIR=/output
     restart: unless-stopped
     deploy:
       resources:

@@ -74,3 +74,25 @@ async fn verify_timeline_empty(_world: &mut DashboardWorld) {
         panic!("❌ Response missing timeline_events");
     }
 }
+#[then(expr = "a file {string} should exist in the output directory")]
+async fn verify_output_file(_world: &mut DashboardWorld, filename: String) {
+    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
+    let path = std::path::Path::new(&output_dir).join(filename);
+
+    // Poll for a short duration to allow processing to finish
+    let start = std::time::Instant::now();
+    let timeout = std::time::Duration::from_secs(5);
+
+    loop {
+        if path.exists() {
+            println!("✅ File found in output: {:?}", path);
+            return;
+        }
+
+        if start.elapsed() > timeout {
+            panic!("❌ File not found in output directory after 5s: {:?}", path);
+        }
+
+        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+    }
+}
