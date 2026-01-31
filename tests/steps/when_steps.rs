@@ -1,6 +1,25 @@
 use super::world::DashboardWorld;
 use cucumber::when;
 
+#[when(expr = "I request deletion of {string} via API")]
+async fn click_delete_button(_world: &mut DashboardWorld, filename: String) {
+    // API equivalent: DELETE /api/actions/delete-file/:filename
+    let client = reqwest::Client::new();
+    let url = format!("http://localhost:8080/api/actions/delete-file/{}", filename);
+    let resp = client
+        .delete(url)
+        .send()
+        .await
+        .expect("Failed to send delete request");
+
+    if !resp.status().is_success() {
+        panic!(
+            "❌ Failed to delete file via API. Status: {}",
+            resp.status()
+        );
+    }
+}
+
 #[when("I request the dashboard home page")]
 async fn request_dashboard(_world: &mut DashboardWorld) {
     // UI layer: navigate to dashboard via browser

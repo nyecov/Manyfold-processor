@@ -2,6 +2,7 @@ Feature: Loose File Upload
 
   Scenario: Sophia Loose Ingestion (Auto-Process OFF)
     Given _API Processor is running
+    And _API the input directory is cleared
     And Auto-Processing is disabled
     When I copy "test_resources/sophia/*" to "/input"
     Then within 5 seconds, the WebUI Queue Depth should be 2

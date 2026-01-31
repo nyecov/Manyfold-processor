@@ -22,6 +22,7 @@ walkdir = "2.5.0"
 serde_yaml = "0.9.34"
 sysinfo = "0.29"
 regex = "1.10"
+scraper = "0.25.0"
 
 [features]
 default = []

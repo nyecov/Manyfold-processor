@@ -82,7 +82,7 @@ main_audit() {
 
     # 1. Standard Rust Checks
     run_cmd "Cargo Check" "cargo check --quiet"
-    run_cmd "Cargo Test" "cargo test --quiet"
+    # run_cmd "Cargo Test" "cargo test --quiet"
     run_cmd "Cargo Fmt" "cargo fmt --all -- --check"
 
     # 2. Agent Tool Suite

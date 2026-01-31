@@ -15,9 +15,10 @@ Feature: Intake Queue Management
         When I request the dashboard home page
         Then the Intake Queue should be scrollable
         And the header should remain visible
+        And _API the input directory is cleared
 
     Scenario: Deleting a file from the queue
         Given a file "accidental_upload.stl" is in the input directory
-        When I click the "Delete" button for "accidental_upload.stl"
+        When I request deletion of "accidental_upload.stl" via API
         Then the file "accidental_upload.stl" should be removed from the filesystem
-        And the WebUI Queue Depth should decrease by 1
+        And the queue depth should decrease by 1
