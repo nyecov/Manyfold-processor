@@ -145,16 +145,15 @@
                 </div>
 
                 <div class="glass rounded-3xl overflow-hidden border border-white/5">
-                    <div class="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/10 mb-2">
-                        <div class="flex items-center gap-6 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                            <span class="w-64">File Path / Dataset</span>
-                            <span>Type</span>
-                            <span>Status</span>
-                        </div>
-                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Action</span>
+                    <div
+                        class="bg-white/5 px-8 py-4 grid grid-cols-[1fr_100px_100px_140px] gap-4 border-b border-white/10 mb-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                        <span>Filename</span>
+                        <span>Type</span>
+                        <span>Status</span>
+                        <span class="text-right">Action</span>
                     </div>
 
-                    <div class="p-2 space-y-1" id="queue-list">
+                    <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto custom-scrollbar" id="queue-list">
                         <!-- Queue items will be injected here -->
                     </div>
 
@@ -275,6 +274,69 @@
                     toggle.checked = data.auto_process_enabled;
                 }
 
+                // Render Queue Items
+                const queueList = document.getElementById('queue-list');
+                if (data.queue_items && data.queue_items.length > 0) {
+                    queueList.innerHTML = data.queue_items.map(item => {
+                        const name = item.toLowerCase();
+                        let type = 'Asset';
+                        let typeClass = 'bg-blue-500/10 text-blue-400';
+
+                        if (name.endsWith('.3mf')) {
+                            type = 'Package';
+                            typeClass = 'bg-violet-500/10 text-violet-400';
+                        } else if (name.endsWith('.stl')) {
+                            type = 'Model';
+                            typeClass = 'bg-emerald-500/10 text-emerald-400';
+                        }
+
+                        return `
+                        <div class="px-4 py-3 grid grid-cols-[1fr_100px_100px_140px] gap-4 items-center hover:bg-white/5 transition-colors group rounded-xl">
+                            <span class="text-sm font-medium text-gray-300 truncate">${item}</span>
+                            <span class="px-2 py-0.5 rounded-md ${typeClass} text-[10px] font-bold uppercase tracking-wider text-center w-fit">
+                                ${type}
+                            </span>
+                            <span class="flex items-center gap-2 text-xs font-semibold text-gray-500">
+                                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 status-pulse"></div>
+                                Staged
+                            </span>
+                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="deleteFile('${item}')" class="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors" title="Delete">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                                <button onclick="alert('Triggering process for ${item}')" class="px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-colors">
+                                    Process
+                                </button>
+                            </div>
+                        </div>
+                    `}).join('');
+                } else {
+                    queueList.innerHTML = '';
+                }
+
+                // Render Timeline
+                const timeline = document.getElementById('timeline');
+                if (data.timeline_events && data.timeline_events.length > 0) {
+                    timeline.innerHTML = data.timeline_events.slice().reverse().map(event => {
+                        const [type, ...rest] = event.split(': ');
+                        const desc = rest.join(': ');
+                        return `
+                            <div class="flex gap-3 text-[10px]">
+                                <span class="text-gray-500">${new Date().toLocaleTimeString([], { hour12: false })}</span>
+                                <span class="text-blue-400 font-bold">${type.toUpperCase()}</span>
+                                <span class="text-gray-300">${desc}</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    timeline.innerHTML = `
+                        <div class="flex gap-3 text-[10px]">
+                            <span class="text-gray-500">SYSTEM</span>
+                            <span class="text-blue-400">READY</span>
+                            <span class="text-gray-300">Web UI Initialized. Waiting for events...</span>
+                        </div>`;
+                }
+
             } catch (error) {
                 console.error('Error fetching status:', error);
             }
@@ -296,6 +358,22 @@
                 console.error("Clear failed", e);
             }
         };
+        // Delete File Logic
+        async function deleteFile(filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
+            try {
+                const response = await fetch(`/api/actions/delete-file/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    fetchStatus();
+                } else {
+                    alert("Delete failed. File may no longer exist.");
+                }
+            } catch (e) {
+                console.error("Delete failed", e);
+            }
+        }
     </script>
 </body>
 
