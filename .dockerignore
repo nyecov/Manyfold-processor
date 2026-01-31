@@ -1,0 +1,11 @@
+target/
+.git/
+.agent/tools/target/
+_Legacy_Archive*/
+Manyfold_reference/
+input/
+output/
+temp/
+playground/
+*.md
+.agent/metrics/

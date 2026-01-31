@@ -6,6 +6,7 @@ description: Core architectural principles and system design using the C4 model 
 # Instructions
 
 <!-- audited_by: .agent/workflows/audit_infrastructure.md -->
+<!-- context_warning_reviewed: 449854c3e67c953899593571dc48bc9818547bc5b28afdfa42f251dfeb8c3d85 -->
 
 When creating new features, refactoring code, or analyzing the system, use this document to understand the architectural boundaries and responsibilities.
 

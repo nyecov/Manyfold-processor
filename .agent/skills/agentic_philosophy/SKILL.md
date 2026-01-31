@@ -39,6 +39,7 @@ The `.agent/` folder is not config—it is a **Ghost Operating System** that run
 | **Explicit Dependencies** | `requires:` frontmatter forces context loading. |
 | **Atomic Workflow Design** | Atomics do one thing; Suites orchestrate Atomics. |
 | **Rust First** | Complex analysis in Rust. Shell/Python only for trivial scans. |
+| **New Artifact Gate** | After creating any skill/workflow, invoke `/feature_governance_integration`. |
 
 ---
 
@@ -99,6 +100,7 @@ This pattern applies to:
 
 ## Related Links
 *   [Project Workflows](../project_workflows/SKILL.md)
+*   [Governance Integration](../governance_integration/SKILL.md) — Feature coverage framework
 *   [Environment Constraints](../environment_constraints/SKILL.md)
 *   [Testing Philosophy](../testing_philosophy/SKILL.md)
 *   [Agent Tools](../../tools/Cargo.toml) — Rust binaries for token-efficient audits

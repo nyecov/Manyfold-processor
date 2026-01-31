@@ -5,17 +5,33 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
 WORKDIR /usr/src/app
+
+# 1. Create a dummy project to cache dependencies
+RUN cargo init
+COPY Cargo.toml Cargo.lock ./
+# Install external dependencies if any (e.g., openssl)
+RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
+
+# 2. Build dependencies only
+RUN mkdir tests && touch tests/cucumber_runner.rs
+RUN cargo build --release
+RUN rm src/*.rs && rm -rf tests
+
+# 3. Copy actual source code
 COPY . .
 
-# Install dependencies for compilation
-RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
-RUN rustup component add clippy rustfmt
+# 4. Touch main.rs to force rebuild of the app (but not deps)
+RUN touch src/main.rs
 
-# Run lints
-RUN cargo fmt --all -- --check
-RUN cargo clippy --release --all-targets --all-features -- -D warnings
+# 5. Run lints (skipped when SKIP_LINTING=true for faster dev builds)
+ARG SKIP_LINTING=false
+RUN if [ "$SKIP_LINTING" = "false" ]; then \
+    rustup component add clippy rustfmt && \
+    cargo fmt --all -- --check && \
+    cargo clippy --release --all-targets --all-features -- -D warnings; \
+    fi
 
-# Build for release
+# 6. Build final binary
 RUN cargo build --release
 
 # Runtime stage

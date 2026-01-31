@@ -47,6 +47,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   **`/audit_constants`**: Checks for hardcoded values vs `constants.yml`.
 *   **`/audit_dependencies`**: Validates `requires:` fields in skills.
 *   **`/audit_workflows`**: Governs workflow library integrity and redundancy.
+*   **`/audit_skill_examples`**: Validates skill examples exist, are linked, and follow format.
 *   **`/audit_tool_alignment`**: **[AGENT-ONLY]** Meta-audit ensuring tools align with docs/workflows.
 
 ### Maintenance Tools (Active)
@@ -55,6 +56,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   **`/maintenance_cleanup`**: **[SENTINEL]** Finds orphans (dead code) and classifies stale content for archiving.
 *   **`/maintenance_metrics`**: **[SENTINEL]** Reviews context cost efficiency trends.
 *   **`/maintenance_annex_review`**: Review annex content for candidate retrieval (move to active) or staleness updates.
+*   **`/feature_governance_integration`**: Analyzes new features for governance gaps and integrates audit coverage.
 
 ---
 
@@ -100,6 +102,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_gherkin.exe` | `/audit_gherkin` | Verifies Gherkin scenario quality |
 | `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
 | `check_links.exe` | `/maintenance_links` | Checks for absolute paths and broken local links |
+| `check_skill_examples.exe` | `/audit_skill_examples` | Checks skill examples for existence and orphans |
 | `check_tool_alignment_skip.exe` | `/audit_tool_alignment (Helper)` | Hash-based skip detection for /audit_tool_alignment |
 | `check_workflow_skip.exe` | `(Helper)` | Checks git status for workflow dependencies |
 | `sentinel_catalog.exe` | `(Meta)` | Metadata Sentinel: Tool Catalog Synchronizer |

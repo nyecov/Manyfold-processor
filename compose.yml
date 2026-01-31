@@ -1,4 +1,5 @@
 services:
+  # Production service (default)
   processor:
     build: .
     image: manyfold-processor:latest
@@ -12,6 +13,35 @@ services:
       - ./temp:/app/temp
     environment:
       - RUST_LOG=info
+      - MANYFOLD_API_URL=${MANYFOLD_API_URL:-http://localhost:3000}
+      - MANYFOLD_API_KEY=${MANYFOLD_API_KEY:-}
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          memory: 1G
+        limits:
+          memory: 5G
+
+  # Development service (fast builds, no linting)
+  processor-dev:
+    profiles: [ "dev" ]
+    build:
+      context: .
+      args:
+        SKIP_LINTING: "true"
+    image: manyfold-processor:dev
+    container_name: manyfold-processor-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./input:/input
+      - ./output:/output
+      - ./config:/config
+      - ./temp:/app/temp
+      - ./static:/app/static # Live-reload for frontend changes
+    environment:
+      - RUST_LOG=debug
       - MANYFOLD_API_URL=${MANYFOLD_API_URL:-http://localhost:3000}
       - MANYFOLD_API_KEY=${MANYFOLD_API_KEY:-}
     restart: unless-stopped

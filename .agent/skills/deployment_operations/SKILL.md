@@ -35,8 +35,16 @@ Technical reference for Docker orchestration and container lifecycle management.
 *   **Updates**: Pull latest image and restart stack.
 *   **Clean Up**: Periodic removal of orphan volumes.
 
+## 4. Windows Development Environment
+*   **Docker Desktop Path**: `C:\Program Files\Docker\Docker\Docker Desktop.exe`
+*   If Docker commands fail, start Docker Desktop first:
+    ```powershell
+    Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    ```
+
 ---
 
 ## See Also
 *   **Governance**: [observability_standards](../observability_standards/SKILL.md)
 *   **Hardware Tiering**: [deploy_on_radxa_rock5](../deploy_on_radxa_rock5/SKILL.md)
+*   **Local Development**: [Development_Workflow.md](../../docs/Development_Workflow.md)

@@ -49,3 +49,7 @@ path = "src/bin/check_workflow_skip.rs"
 name = "check_tool_alignment_skip"
 path = "src/bin/check_tool_alignment_skip.rs"
 
+[[bin]]
+name = "check_skill_examples"
+path = "src/bin/check_skill_examples.rs"
+
