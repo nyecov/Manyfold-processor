@@ -9,3 +9,4 @@ temp/
 playground/
 *.md
 .agent/metrics/
+test_resources/

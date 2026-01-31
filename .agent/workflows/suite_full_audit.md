@@ -10,6 +10,7 @@ The ultimate verification tool for the Manyfold Processor project.
 <!-- depends: .agent/workflows/suite_docs.md -->
 <!-- depends: .agent/workflows/audit_code_quality.md -->
 <!-- depends: .agent/workflows/suite_tests.md -->
+<!-- depends: .agent/workflows/audit_masquerading.md -->
 <!-- depends: .agent/workflows/audit_infrastructure.md -->
 <!-- depends: .agent/tools/src/bin/check_workflow_skip.rs -->
 

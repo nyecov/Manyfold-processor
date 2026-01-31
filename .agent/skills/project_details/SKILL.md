@@ -38,6 +38,17 @@ This project is developed **solely by a single developer** with aggressive **AI 
 ## Overview
 A standalone utility for processing 3D models for Manyfold, designed to run on the Radxa Rock 5 ITX.
 
+## Technology Stack
+*   **Core Language**: **Rust** (Project & AI Agent Internals).
+*   **Testing Interface**: **Cucumber** (Gherkin) — The official language-based verification standard.
+*   **Containerization**: Docker (Compose & Buildx).
+
+## Development Setup
+*   **IDE**: VS Code (Recommended).
+*   **Extensions**:
+    *   `alexkrechik.cucumberautocomplete` (Cucumber Full Support) — configured via `.vscode/settings.json`.
+    *   `rust-lang.rust-analyzer` (Rust).
+
 ## Key References
 *   **Historical Context**: See [annex](../../annex/README.md) for decision logs and hardware snapshots.
 *   **Architecture**: See [architectural_guidelines](../architectural_guidelines/SKILL.md) and [c4_model](../c4_model/SKILL.md) skills.

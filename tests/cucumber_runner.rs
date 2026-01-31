@@ -19,7 +19,21 @@ use steps::world::DashboardWorld;
 
 #[tokio::main]
 async fn main() {
+    // 🛡️ Phase 1: Anti-Masquerading Reliability Audit
+    // This ensures no UI steps are "masquerading" as API calls without DOM verification
+    println!("🧪 Running Reliability Audit (Anti-Masquerading)...");
+    let audit_status = std::process::Command::new("cargo")
+        .args(["run", "--bin", "audit_masquerading", "--quiet"])
+        .status()
+        .expect("Failed to execute reliability audit tool");
+
+    if !audit_status.success() {
+        // Findings are printed by the audit tool itself to stdout/stderr
+        std::process::exit(1);
+    }
+
+    // 🚀 Phase 2: Cucumber Feature Execution
     DashboardWorld::cucumber()
-        .run("tests/Testing/Features")
+        .run_and_exit("tests/features")
         .await;
 }

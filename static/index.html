@@ -187,7 +187,13 @@
                     </div>
 
                     <div class="pt-6 border-t border-white/10">
-                        <span class="text-sm font-semibold block mb-4">Live Timeline</span>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-semibold">Live Timeline</span>
+                            <button id="clear-timeline-btn"
+                                class="text-[10px] text-gray-500 hover:text-red-400 transition-colors uppercase font-bold tracking-widest border border-white/5 px-2 py-0.5 rounded bg-white/5">
+                                Clear
+                            </button>
+                        </div>
                         <div class="space-y-4 font-mono" id="timeline">
                             <div class="flex gap-3 text-[10px]">
                                 <span class="text-gray-500">SYSTEM</span>
@@ -277,6 +283,19 @@
         // Poll every 2 seconds
         setInterval(fetchStatus, 2000);
         fetchStatus();
+
+        // Clear Timeline Logic
+        const clearBtn = document.getElementById('clear-timeline-btn');
+        clearBtn.onclick = async () => {
+            if (!confirm("Clear all timeline events?")) return;
+            try {
+                await fetch('/api/actions/clear-timeline', { method: 'POST' });
+                document.getElementById('timeline').innerHTML = ''; // Immediate local clear
+                fetchStatus(); // Refresh status counts
+            } catch (e) {
+                console.error("Clear failed", e);
+            }
+        };
     </script>
 </body>
 

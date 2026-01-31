@@ -42,6 +42,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   **`/audit_code_quality`**: Performs code formatting, linting, and security checks.
 *   **`/audit_consistency`**: Checks logical integrity across the knowledge base.
 *   **`/audit_gherkin`**: Verifies BDD scenario quality and layering.
+*   **`/audit_masquerading`**: **[HYBRID]** Audits UI-named steps for direct API calls to prevent false positives.
 *   **`/audit_step_glue`**: Verifies alignment between Gherkin and Rust.
 *   **`/audit_infrastructure`**: Checks codebase/Docker against design mandates.
 *   **`/audit_constants`**: Checks for hardcoded values vs `constants.yml`.
@@ -100,6 +101,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_constants.exe` | `/audit_constants` | Checks for hardcoded values vs constants.yml |
 | `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |
 | `check_gherkin.exe` | `/audit_gherkin` | Verifies Gherkin scenario quality |
+| `audit_masquerading.exe` | `/audit_masquerading` | Audits UI-named steps for direct API calls |
 | `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
 | `check_links.exe` | `/maintenance_links` | Checks for absolute paths and broken local links |
 | `check_skill_examples.exe` | `/audit_skill_examples` | Checks skill examples for existence and orphans |

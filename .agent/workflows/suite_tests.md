@@ -19,5 +19,10 @@ This suite performs a comprehensive audit of the BDD testing stack by invoking a
 *   Verify alignment between Gherkin steps and Rust definitions, including Twin-linking.
 *   📢 **Report**: Step glue audit status
 
-## 3. Findings Consolidation
+## 3. Reliability Audit
+*   Invoke `/audit_masquerading`
+*   Verify UI-named steps don't bypass UI via direct API calls without validation.
+*   📢 **Report**: Anti-masquerading status
+
+## 4. Findings Consolidation
 *   Synthesize reports into a unified testing health overview.

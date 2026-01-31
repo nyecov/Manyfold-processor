@@ -33,12 +33,13 @@ The `.agent/` folder is not config—it is a **Ghost Operating System** that run
 
 ## 📐 Design Rules
 
-| Rule | Principle |
+| Role | Principle |
 |------|-----------|
 | **Diátaxis for Machines** | "Fail if X" not "You might want to check X". |
 | **Explicit Dependencies** | `requires:` frontmatter forces context loading. |
 | **Atomic Workflow Design** | Atomics do one thing; Suites orchestrate Atomics. |
-| **Rust First** | Complex analysis in Rust. Shell/Python only for trivial scans. |
+| **Rust First** | All internal tools and agent logic must be written in Rust. |
+| **Gherkin as Truth** | `.feature` files are the official language-based contract. |
 | **New Artifact Gate** | After creating any skill/workflow, invoke `/feature_governance_integration`. |
 
 ---

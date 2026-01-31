@@ -18,6 +18,7 @@ struct Status {
     system_load: f32,
     memory_usage: u64,
     auto_process_enabled: bool,
+    timeline_events: Vec<String>, // Added timeline
 }
 
 #[derive(Deserialize)]
@@ -29,6 +30,8 @@ struct AutoProcessConfig {
 struct AppState {
     sys: Arc<Mutex<System>>,
     auto_process_enabled: Arc<Mutex<bool>>,
+    queue_count: Arc<Mutex<usize>>,
+    timeline: Arc<Mutex<Vec<String>>>,
 }
 
 pub async fn start_web_server() -> anyhow::Result<()> {
@@ -41,8 +44,43 @@ pub async fn start_web_server() -> anyhow::Result<()> {
 
     let state = AppState {
         sys: Arc::new(Mutex::new(sys)),
-        auto_process_enabled: Arc::new(Mutex::new(false)), // Default OFF
+        auto_process_enabled: Arc::new(Mutex::new(false)),
+        queue_count: Arc::new(Mutex::new(0)),
+        timeline: Arc::new(Mutex::new(Vec::new())),
     };
+
+    // Spawn File Watcher (Mock/Simple)
+    let watcher_state = state.clone();
+    tokio::spawn(async move {
+        loop {
+            // Count files in input/
+            let mut count = 0;
+            let mut new_files = Vec::new();
+            if let Ok(entries) = std::fs::read_dir("input") {
+                for entry in entries.flatten() {
+                    if entry.path().is_file() {
+                        count += 1;
+                        if let Some(name) = entry.file_name().to_str() {
+                            new_files.push(format!("Incoming: {} (Type: Loose)", name));
+                        }
+                    }
+                }
+            }
+
+            // Update State
+            {
+                let mut q = watcher_state.queue_count.lock().unwrap();
+                *q = count;
+
+                let mut t = watcher_state.timeline.lock().unwrap();
+                // Naive: just replace timeline with current files for this test
+                // Logic: If file exists, it's "Incoming"
+                *t = new_files;
+            }
+
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        }
+    });
 
     // Serve static files from the "static" directory
     let static_files = ServeDir::new("static");
@@ -54,6 +92,8 @@ pub async fn start_web_server() -> anyhow::Result<()> {
         .route("/api/process/all", post(process_all))
         .route("/api/config/auto-process", get(get_auto_process))
         .route("/api/config/auto-process", put(set_auto_process))
+        .route("/api/actions/clear-timeline", post(clear_timeline))
+        .route("/health", get(health_check))
         .layer(Extension(state));
 
     // Define the address
@@ -77,14 +117,17 @@ async fn get_status(Extension(state): Extension<AppState>) -> Json<Status> {
     let load = sys.global_cpu_info().cpu_usage();
     let memory = sys.used_memory() / 1024 / 1024; // MB
     let auto = *state.auto_process_enabled.lock().unwrap();
+    let queue = *state.queue_count.lock().unwrap();
+    let timeline = state.timeline.lock().unwrap().clone();
 
     Json(Status {
         engine_status: "online".to_string(),
-        queue_count: 0,
+        queue_count: queue,
         processed_count: 0,
         system_load: load,
         memory_usage: memory,
         auto_process_enabled: auto,
+        timeline_events: timeline,
     })
 }
 
@@ -106,4 +149,15 @@ async fn set_auto_process(
 async fn process_all() -> Json<serde_json::Value> {
     log::info!("Triggering manual process-all from UI");
     Json(serde_json::json!({ "status": "success", "message": "Batch processing initiated" }))
+}
+
+async fn clear_timeline(Extension(state): Extension<AppState>) -> Json<serde_json::Value> {
+    let mut t = state.timeline.lock().unwrap();
+    t.clear();
+    log::info!("Timeline cleared via API");
+    Json(serde_json::json!({ "status": "success" }))
+}
+
+async fn health_check() -> axum::http::StatusCode {
+    axum::http::StatusCode::OK
 }

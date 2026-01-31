@@ -22,6 +22,7 @@ To distinguish interaction layers while maintaining logical grouping:
 
 ## 3. Uniqueness & Reuse
 *   **Unique Steps**: `Given/When/Then` sentences must be unique for different logical intents.
+*   **No Aliasing**: One logic = One Step Name. Do not map multiple different sentences (e.g., "Given X" and "Given X is true") to the same Rust function function. Enforce a single Ubiquitous Language.
 *   **Sentence Reuse**: A UI step and an API step MAY share the exact same sentence (e.g., `Given the service is running` and `Given_API the service is running`) to maintain layer independence.
 
 ## 4. Twin Linking (AI Traceability)
