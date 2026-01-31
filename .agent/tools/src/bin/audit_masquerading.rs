@@ -66,10 +66,12 @@ fn main() {
     }
 
     for entry in WalkDir::new(steps_dir).into_iter().filter_map(|e| e.ok()) {
-        if entry.path().is_file() && entry.path().extension().is_some_and(|ext| ext == "rs")
-            && entry.file_name() != "mod.rs" {
-                all_findings.extend(audit_file(entry.path()));
-            }
+        if entry.path().is_file()
+            && entry.path().extension().is_some_and(|ext| ext == "rs")
+            && entry.file_name() != "mod.rs"
+        {
+            all_findings.extend(audit_file(entry.path()));
+        }
     }
 
     if !all_findings.is_empty() {

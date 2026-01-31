@@ -52,6 +52,7 @@ VOLUME ["/input", "/output", "/config", "/app/temp"]
 
 # Set Environment Variables
 ENV RUST_LOG=info
+ENV INPUT_DIR=/input
 ENV WORKING_DIR=/app/temp
 
 CMD ["manyfold-processor"]

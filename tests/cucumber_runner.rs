@@ -23,7 +23,14 @@ async fn main() {
     // This ensures no UI steps are "masquerading" as API calls without DOM verification
     println!("🧪 Running Reliability Audit (Anti-Masquerading)...");
     let audit_status = std::process::Command::new("cargo")
-        .args(["run", "--bin", "audit_masquerading", "--quiet"])
+        .args([
+            "run",
+            "--manifest-path",
+            ".agent/tools/Cargo.toml",
+            "--bin",
+            "audit_masquerading",
+            "--quiet",
+        ])
         .status()
         .expect("Failed to execute reliability audit tool");
 
@@ -34,6 +41,7 @@ async fn main() {
 
     // 🚀 Phase 2: Cucumber Feature Execution
     DashboardWorld::cucumber()
+        .max_concurrent_scenarios(1) // 🛡️ Prevent interference in shared localhost environment
         .run_and_exit("tests/features")
         .await;
 }

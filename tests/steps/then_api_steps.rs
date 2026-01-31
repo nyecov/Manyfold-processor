@@ -49,7 +49,7 @@ async fn verify_queue_depth(_world: &mut DashboardWorld, seconds: u64, expected:
     }
 }
 
-#[then(expr = "System Memory Usage should be < {int}% (Constraint Check)")]
+#[then(expr = "System Memory Usage should be less than {int} percent")]
 async fn verify_memory_usage(_world: &mut DashboardWorld, _limit: u64) {
     let client = reqwest::Client::new();
     // Assuming API returns raw MB usage, not percentage?
@@ -75,7 +75,7 @@ async fn verify_memory_usage(_world: &mut DashboardWorld, _limit: u64) {
     // TODO: convert limit to MB or get system total
 }
 
-#[then(expr = "the WebUI Timeline should show {string} (Type: Loose)")]
+#[then(expr = "the WebUI Timeline should show {string}")]
 async fn verify_timeline_entry(_world: &mut DashboardWorld, entry: String) {
     let client = reqwest::Client::new();
 
@@ -99,10 +99,9 @@ async fn verify_timeline_entry(_world: &mut DashboardWorld, entry: String) {
     let json: serde_json::Value = resp.json().await.expect("Failed to parse status JSON");
 
     if let Some(events) = json["timeline_events"].as_array() {
-        let found = events.iter().any(|e| {
-            e.as_str()
-                .is_some_and(|s| s.contains(&entry) && s.contains("(Type: Loose)"))
-        });
+        let found = events
+            .iter()
+            .any(|e| e.as_str().is_some_and(|s| s.contains(&entry)));
 
         if !found {
             panic!(

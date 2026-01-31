@@ -36,7 +36,4 @@ glob = "0.3.3"
 name = "cucumber_runner"
 harness = false
 
-[[bin]]
-name = "audit_masquerading"
-path = ".agent/tools/src/bin/audit_masquerading.rs"
 

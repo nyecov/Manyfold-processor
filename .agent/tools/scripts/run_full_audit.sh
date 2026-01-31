@@ -94,6 +94,7 @@ main_audit() {
     run_tool "Constants" "$TOOLS_DIR/check_constants"
     run_tool "Gherkin Quality" "$TOOLS_DIR/check_gherkin"
     run_tool "Skill Examples" "$TOOLS_DIR/check_skill_examples"
+    run_tool "Anti-Masquerading" "$TOOLS_DIR/audit_masquerading"
 
     # 3. Tool Alignment (Self-Check)
     echo -n "[..] [Tool Alignment] Running..."

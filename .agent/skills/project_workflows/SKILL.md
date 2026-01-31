@@ -97,11 +97,11 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | Tool | Workflow | 🔧 Covers |
 |------|----------|-----------|
 | `audit_dependencies.exe` | `/audit_dependencies` | Validates 'requires:' fields in skills |
+| `audit_masquerading.exe` | `/audit_masquerading` | Undocumented |
 | `check_consistency.exe` | `/audit_consistency` | Checks logical integrity (TODOs, TBDs) across KB |
 | `check_constants.exe` | `/audit_constants` | Checks for hardcoded values vs constants.yml |
 | `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |
 | `check_gherkin.exe` | `/audit_gherkin` | Verifies Gherkin scenario quality |
-| `audit_masquerading.exe` | `/audit_masquerading` | Audits UI-named steps for direct API calls |
 | `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
 | `check_links.exe` | `/maintenance_links` | Checks for absolute paths and broken local links |
 | `check_skill_examples.exe` | `/audit_skill_examples` | Checks skill examples for existence and orphans |

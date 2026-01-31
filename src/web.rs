@@ -51,12 +51,13 @@ pub async fn start_web_server() -> anyhow::Result<()> {
 
     // Spawn File Watcher (Mock/Simple)
     let watcher_state = state.clone();
+    let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
     tokio::spawn(async move {
         loop {
-            // Count files in input/
+            // Count files in input_dir
             let mut count = 0;
             let mut new_files = Vec::new();
-            if let Ok(entries) = std::fs::read_dir("input") {
+            if let Ok(entries) = std::fs::read_dir(&input_dir) {
                 for entry in entries.flatten() {
                     if entry.path().is_file() {
                         count += 1;
