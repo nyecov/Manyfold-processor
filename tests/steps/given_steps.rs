@@ -44,7 +44,11 @@ async fn create_dummy_file(_world: &mut DashboardWorld, filename: String) {
 }
 
 #[given(regex = "^\"([^\"]+)\" \\(([^)]+)\\) is in the input directory$")]
-async fn create_file_with_size_desc(_world: &mut DashboardWorld, filename: String, size_desc: String) {
+async fn create_file_with_size_desc(
+    _world: &mut DashboardWorld,
+    filename: String,
+    size_desc: String,
+) {
     create_file_internal(filename, Some(size_desc));
 }
 
@@ -56,7 +60,7 @@ async fn create_file_default(_world: &mut DashboardWorld, filename: String) {
 fn create_file_internal(filename: String, size_desc: Option<String>) {
     let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
     let path = Path::new(&input_dir).join(&filename);
-    
+
     let size: u64 = if let Some(desc) = size_desc {
         if desc.to_lowercase().contains("mb") {
             desc.replace("MB", "").trim().parse::<u64>().unwrap_or(1) * 1024 * 1024

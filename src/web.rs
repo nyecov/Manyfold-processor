@@ -1,10 +1,14 @@
+use crate::config::SystemSettings;
+use crate::geometry::GeometryHelper;
+use crate::metadata::{MetadataHelper, Resource};
 use axum::{
     extract::Path as AxumPath,
-    routing::{delete, get, post, put},
+    routing::{delete, get, post},
     Extension, Json, Router,
 };
 use image::AnimationDecoder;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs::File;
 use std::{
     collections::HashSet,
@@ -13,10 +17,6 @@ use std::{
 };
 use sysinfo::{CpuExt, CpuRefreshKind, RefreshKind, System, SystemExt};
 use tower_http::services::ServeDir;
-use std::collections::HashMap;
-use crate::config::SystemSettings;
-use crate::geometry::GeometryHelper;
-use crate::metadata::{MetadataHelper, Resource};
 
 #[derive(Serialize)]
 struct Status {
@@ -29,7 +29,7 @@ struct Status {
     memory_usage: u64,
     auto_process_enabled: bool,
     timeline_events: Vec<String>,
-    settle_status: HashMap<String, f32>, 
+    settle_status: HashMap<String, f32>,
     collisions: Vec<String>, // List of filenames that would collide
 }
 
@@ -105,7 +105,7 @@ pub async fn start_web_server() -> anyhow::Result<()> {
                 for f in &current_files {
                     let path = std::path::Path::new(&input_dir).join(f);
                     let metadata = std::fs::metadata(&path);
-                    
+
                     if let Ok(m) = metadata {
                         let current_size = m.len();
                         let info = settle_map.entry(f.clone()).or_insert(FileSettleInfo {
@@ -117,12 +117,10 @@ pub async fn start_web_server() -> anyhow::Result<()> {
                         if !info.is_ready {
                             if info.last_size == current_size {
                                 info.pulses_stable += 1;
-                                
+
                                 // Hard Safety: Exclusive Lock Test
-                                let can_lock = std::fs::OpenOptions::new()
-                                    .write(true)
-                                    .open(&path)
-                                    .is_ok();
+                                let can_lock =
+                                    std::fs::OpenOptions::new().write(true).open(&path).is_ok();
 
                                 if info.pulses_stable >= target_pulses && can_lock {
                                     info.is_ready = true;
@@ -180,7 +178,10 @@ pub async fn start_web_server() -> anyhow::Result<()> {
         .route("/api/config/settings", get(get_settings))
         .route("/api/config/settings/update", post(set_settings))
         .route("/api/actions/clear-timeline", post(clear_timeline))
-        .route("/api/actions/process/:filename", post(process_file_with_hint))
+        .route(
+            "/api/actions/process/:filename",
+            post(process_file_with_hint),
+        )
         .route("/api/actions/delete-file/:filename", delete(delete_file))
         .route("/api/actions/delete-all", post(delete_all))
         .route("/health", get(health_check))
@@ -211,7 +212,7 @@ async fn get_status(Extension(state): Extension<AppState>) -> Json<Status> {
     let queue_items = state.queue_items.lock().unwrap().clone();
     let queue_items_with_size = state.queue_items_with_size.lock().unwrap().clone();
     let timeline = state.timeline.lock().unwrap().clone();
-    
+
     let settle_state = state.file_settle_state.lock().unwrap();
     let mut settle_status = HashMap::new();
     let target_pulses = (settings.network_settle_seconds / 0.5).ceil() as u32;
@@ -229,10 +230,10 @@ async fn get_status(Extension(state): Extension<AppState>) -> Json<Status> {
 
         // Collision Check
         if f.to_lowercase().ends_with(".stl") {
-             let slug = GeometryHelper::generate_slug(f);
-             if std::path::Path::new(&output_dir).join(&slug).exists() {
-                 collisions.push(f.clone());
-             }
+            let slug = GeometryHelper::generate_slug(f);
+            if std::path::Path::new(&output_dir).join(&slug).exists() {
+                collisions.push(f.clone());
+            }
         }
     }
 
@@ -261,7 +262,7 @@ async fn set_settings(
     Json(payload): Json<SettingsUpdate>,
 ) -> Json<serde_json::Value> {
     let mut settings = state.settings.lock().unwrap();
-    
+
     if let Some(auto) = payload.auto_process_enabled {
         settings.auto_process_enabled = auto;
     }
@@ -271,12 +272,11 @@ async fn set_settings(
     if let Some(buffer) = payload.network_settle_seconds {
         settings.network_settle_seconds = buffer;
     }
-    
+
     let _ = settings.save();
     log::info!("System settings updated via API");
     Json(serde_json::json!({ "status": "success", "settings": *settings }))
 }
-
 
 async fn process_all() -> Json<serde_json::Value> {
     log::info!("Triggering manual process-all from UI");
@@ -293,26 +293,38 @@ async fn process_file_with_hint(
     Extension(state): Extension<AppState>,
     Json(payload): Json<ProcessPayload>,
 ) -> Json<serde_json::Value> {
-    log::info!("Processing request for: {} (Hint: {:?})", filename, payload.thumbnail_hint);
-    
+    log::info!(
+        "Processing request for: {} (Hint: {:?})",
+        filename,
+        payload.thumbnail_hint
+    );
+
     // Check if ready
     {
         let settle_map = state.file_settle_state.lock().unwrap();
         if let Some(info) = settle_map.get(&filename) {
             if !info.is_ready {
-                return Json(serde_json::json!({ "status": "error", "message": "File is still settling" }));
+                return Json(
+                    serde_json::json!({ "status": "error", "message": "File is still settling" }),
+                );
             }
         }
     }
 
     if filename.to_lowercase().ends_with(".stl") {
         match handle_loose_stl_project(&filename, &state, payload.thumbnail_hint).await {
-            Ok(_) => Json(serde_json::json!({ "status": "success", "message": "Project processed" })),
-            Err(e) => Json(serde_json::json!({ "status": "error", "message": format!("Processing failed: {}", e) })),
+            Ok(_) => {
+                Json(serde_json::json!({ "status": "success", "message": "Project processed" }))
+            }
+            Err(e) => Json(
+                serde_json::json!({ "status": "error", "message": format!("Processing failed: {}", e) }),
+            ),
         }
     } else {
         // Fallback for other files (simple delete or handle as zip)
-        Json(serde_json::json!({ "status": "error", "message": "Only STL files trigger project creation currently" }))
+        Json(
+            serde_json::json!({ "status": "error", "message": "Only STL files trigger project creation currently" }),
+        )
     }
 }
 
@@ -328,14 +340,18 @@ async fn handle_loose_stl_project(
     // 1. Aggregation (Flat Grab)
     let mut stl_files = Vec::new();
     let mut image_files = Vec::new();
-    
+
     for entry in std::fs::read_dir(&input_dir)? {
         let entry = entry?;
         let name = entry.file_name().to_string_lossy().to_string();
         let lower = name.to_lowercase();
         if lower.ends_with(".stl") {
             stl_files.push(name);
-        } else if lower.ends_with(".jpg") || lower.ends_with(".png") || lower.ends_with(".webp") || lower.ends_with(".gif") {
+        } else if lower.ends_with(".jpg")
+            || lower.ends_with(".png")
+            || lower.ends_with(".webp")
+            || lower.ends_with(".gif")
+        {
             image_files.push(name);
         }
     }
@@ -390,15 +406,23 @@ async fn handle_loose_stl_project(
 
     for img in &image_files {
         let mut current_priority = 1;
-        
+
         if let Some(ref hint) = thumbnail_hint {
-            if img == hint { current_priority = 4; }
+            if img == hint {
+                current_priority = 4;
+            }
         }
-        
+
         if current_priority < 4 {
-            let img_stem = std::path::Path::new(img).file_stem().unwrap_or_default().to_string_lossy();
-            let stl_stem = std::path::Path::new(&main_stl).file_stem().unwrap_or_default().to_string_lossy();
-            
+            let img_stem = std::path::Path::new(img)
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy();
+            let stl_stem = std::path::Path::new(&main_stl)
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy();
+
             if img_stem == stl_stem {
                 current_priority = 3;
             } else if img.to_lowercase().contains("thumbnail") {
@@ -412,9 +436,15 @@ async fn handle_loose_stl_project(
         } else if current_priority == best_priority && current_priority == 1 {
             // Size fallback
             let p1 = std::path::Path::new(&input_dir).join(img);
-            let p2 = winner_image.as_ref().map(|w| std::path::Path::new(&input_dir).join(w));
+            let p2 = winner_image
+                .as_ref()
+                .map(|w| std::path::Path::new(&input_dir).join(w));
             let s1 = std::fs::metadata(p1)?.len();
-            let s2 = if let Some(p) = p2 { std::fs::metadata(p)?.len() } else { 0 };
+            let s2 = if let Some(p) = p2 {
+                std::fs::metadata(p)?.len()
+            } else {
+                0
+            };
             if s1 > s2 {
                 winner_image = Some(img.clone());
             }
@@ -433,13 +463,18 @@ async fn handle_loose_stl_project(
         let src = std::path::Path::new(&input_dir).join(&img);
         let is_winner = winner_image.as_ref().map(|w| w == &img).unwrap_or(false);
         let dest_name = if is_winner {
-             format!("{}_thumbnail", slug)
+            format!("{}_thumbnail", slug)
         } else {
-             std::path::Path::new(&img).file_stem().unwrap_or_default().to_string_lossy().to_string()
+            std::path::Path::new(&img)
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string()
         };
 
         // Established Image Logic
-        let (processed_name, media_type) = process_image_to_project(&src, &project_path, &dest_name).await?;
+        let (processed_name, media_type) =
+            process_image_to_project(&src, &project_path, &dest_name).await?;
         resources.push(Resource {
             name: dest_name,
             path: processed_name,
@@ -456,7 +491,7 @@ async fn handle_loose_stl_project(
     }
     // Cleanup images too as they've been copied/transferred
     // (Note: imaging logic can be refined to move or copy)
-    
+
     let mut t = state.timeline.lock().unwrap();
     t.push(format!("Project '{}' created successfully", slug));
     t.push(format!("Processed: {} -> {}.3mf", primary, slug));
@@ -464,16 +499,20 @@ async fn handle_loose_stl_project(
     Ok(())
 }
 
-async fn process_image_to_project(src: &std::path::Path, dest_dir: &std::path::Path, name: &str) -> anyhow::Result<(String, String)> {
+async fn process_image_to_project(
+    src: &std::path::Path,
+    dest_dir: &std::path::Path,
+    name: &str,
+) -> anyhow::Result<(String, String)> {
     let lower_src = src.to_string_lossy().to_lowercase();
-    
+
     if lower_src.ends_with(".gif") {
         // Animation Check
         let file = File::open(src)?;
         let reader = std::io::BufReader::new(file);
         let decoder = image::codecs::gif::GifDecoder::new(reader)?;
         let frames: Vec<_> = decoder.into_frames().collect_frames()?;
-        
+
         if frames.len() > 1 {
             let dest_file = format!("{}.gif", name);
             std::fs::copy(src, dest_dir.join(&dest_file))?;

@@ -99,7 +99,6 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 |------|----------|-----------|
 | `audit_dependencies.exe` | `/audit_dependencies` | Validates 'requires:' fields in skills |
 | `audit_masquerading.exe` | `/audit_masquerading` | Undocumented |
-| `check_test_resources.exe` | `/audit_test_resources` | Validates manifest schema, integrity, and orphans |
 | `check_consistency.exe` | `/audit_consistency` | Checks logical integrity (TODOs, TBDs) across KB |
 | `check_constants.exe` | `/audit_constants` | Checks for hardcoded values vs constants.yml |
 | `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |
@@ -107,6 +106,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 | `check_infrastructure.exe` | `/audit_infrastructure` | Checks codebase compliance (Docker, Cargo, Python) |
 | `check_links.exe` | `/maintenance_links` | Checks for absolute paths and broken local links |
 | `check_skill_examples.exe` | `/audit_skill_examples` | Checks skill examples for existence and orphans |
+| `check_test_resources.exe` | `/audit_test_resources` | Undocumented |
 | `check_tool_alignment_skip.exe` | `/audit_tool_alignment (Helper)` | Hash-based skip detection for /audit_tool_alignment |
 | `check_workflow_skip.exe` | `(Helper)` | Checks git status for workflow dependencies |
 | `sentinel_catalog.exe` | `(Meta)` | Metadata Sentinel: Tool Catalog Synchronizer |

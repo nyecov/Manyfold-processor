@@ -35,7 +35,7 @@ impl MetadataHelper {
         let path = project_dir.join("datapackage.json");
         let content = serde_json::to_string_pretty(&dp)?;
         fs::write(path, content)?;
-        
+
         log::info!("Generated datapackage.json for {}", slug);
         Ok(())
     }

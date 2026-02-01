@@ -27,30 +27,89 @@ async fn request_dashboard(_world: &mut DashboardWorld) {
 }
 
 #[when(expr = "I copy {string} to {string}")]
-async fn copy_files(_world: &mut DashboardWorld, src_pattern: String, dest_dir: String) {
-    // let dest_path = std::path::Path::new(&dest_dir);
-    // Handle glob if present (basic * support)
-    // For simplicity, we assume one level of globbing or direct path
+async fn copy_files(_world: &mut DashboardWorld, src: String, dest_dir: String) {
+    // 1. Try to resolve as Registry ID first
+    // We assume Registry IDs don't contain path separators
+    let src_path = if !src.contains('/') && !src.contains('\\') && !src.contains('*') {
+        // It might be an ID. Try to resolve it.
+        // We catch the panic/error if not found and fallback?
+        // Or we just checking if it exists in manifest?
+        // simple panic if it looks like an ID but fails is probably safer for strictness.
+        // But to allow "filename.stl" (dummy) we might need to be careful.
+        // Let's assume if it has no extension, it's an ID? Or check manifest.
 
-    // We'll shell out to 'cp' or 'powershell' to handle globs easily platform-agnostic?
-    // Actually, let's use glob crate if available, or just shell out for "copy resources".
-    // Given the constraints, copying a directory is easier.
-
-    // Simplification: Manual iteration
-    let sources = glob::glob(&src_pattern).expect("Failed to read glob pattern");
-    for path in sources.flatten() {
-        let file_name = path.file_name().unwrap();
-        let destination = if dest_dir.starts_with("/") {
-            // If absolute/root relative, map to local (simplification for docker mapping)
-            std::path::Path::new(".").join(dest_dir.trim_start_matches('/'))
+        // Since we can't easily check manifest without loading it every time (which is fine for tests),
+        // let's try to load it.
+        let manifest = crate::support::resources::load_manifest();
+        if let Some(res) = manifest.resources.iter().find(|r| r.id == src) {
+            std::path::PathBuf::from("test_resources").join(&res.path)
         } else {
-            std::path::Path::new(&dest_dir).to_path_buf()
+            // Not an ID, treat as path
+            std::path::PathBuf::from(&src)
+        }
+    } else {
+        std::path::PathBuf::from(&src)
+    };
+
+    // 2. Handle Copy
+    // If it's a specific file (from registry or explicit path)
+    if src_path.exists() && src_path.is_file() {
+        let file_name = src_path.file_name().unwrap();
+        let destination = if dest_dir.starts_with('/') {
+            let base = std::path::Path::new(".").join(dest_dir.trim_start_matches('/'));
+            if base.is_dir() || !dest_dir.contains('.') {
+                base.join(file_name)
+            } else {
+                base
+            }
+        } else {
+            let p = std::path::Path::new(&dest_dir);
+            if p.extension().is_some() {
+                p.to_path_buf()
+            } else {
+                p.join(file_name)
+            }
         };
 
-        let target = destination.join(file_name);
-        std::fs::copy(&path, &target)
-            .unwrap_or_else(|_| panic!("Failed to copy {:?} to {:?}", path, target));
-        println!("Copied {:?} to {:?}", path, target);
+        // Ensure parent dir exists
+        if let Some(parent) = destination.parent() {
+            std::fs::create_dir_all(parent).expect("Failed to create destination parent directory");
+        }
+
+        std::fs::copy(&src_path, &destination).unwrap_or_else(|e| {
+            panic!("Failed to copy {:?} to {:?}: {}", src_path, destination, e)
+        });
+        println!(
+            "✅ Copied Registry File {:?} to {:?}",
+            src_path, destination
+        );
+    } else {
+        // Fallback to Glob for raw paths
+        let src_pattern = src_path.to_string_lossy();
+        let sources = glob::glob(&src_pattern).expect("Failed to read glob pattern");
+        let mut count = 0;
+        for path in sources.flatten() {
+            let file_name = path.file_name().unwrap();
+            let destination = if dest_dir.starts_with("/") {
+                std::path::Path::new(".").join(dest_dir.trim_start_matches('/'))
+            } else {
+                std::path::Path::new(&dest_dir).to_path_buf()
+            }
+            .join(file_name);
+
+            if let Some(parent) = destination.parent() {
+                std::fs::create_dir_all(parent)
+                    .expect("Failed to create destination parent directory");
+            }
+
+            std::fs::copy(&path, &destination)
+                .unwrap_or_else(|_| panic!("Failed to copy {:?} to {:?}", path, destination));
+            println!("Copied {:?} to {:?}", path, destination);
+            count += 1;
+        }
+        if count == 0 {
+            println!("⚠️ Warning: No files found for pattern/id '{}'", src);
+        }
     }
 }
 

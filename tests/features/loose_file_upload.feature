@@ -4,7 +4,8 @@ Feature: Loose File Upload
     Given _API Processor is running
     And _API the input directory is cleared
     And Auto-Processing is disabled
-    When I copy "test_resources/sophia/*" to "/input"
+    When I copy "sophia_stl" to "input/"
+    And I copy "sophia_jpg" to "/input"
     Then within 5 seconds, the WebUI Queue Depth should be 2
     And the WebUI Timeline should show "Incoming: sophia-35mm-sophia.stl (Awaiting Settle)"
     And the WebUI Timeline should show "Incoming: 720X720-sophia-new.jpg (Awaiting Settle)"

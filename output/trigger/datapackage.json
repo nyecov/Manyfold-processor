@@ -1,0 +1,16 @@
+{
+  "name": "trigger",
+  "title": "trigger",
+  "resources": [
+    {
+      "name": "Main Model",
+      "path": "trigger.3mf",
+      "mediaType": "model/3mf"
+    },
+    {
+      "name": "trigger_thumbnail",
+      "path": "trigger_thumbnail.webp",
+      "mediaType": "image/webp"
+    }
+  ]
+}

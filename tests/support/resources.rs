@@ -1,6 +1,6 @@
 use serde::Deserialize;
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
@@ -22,7 +22,11 @@ pub fn load_manifest() -> Manifest {
 
 pub fn get_path(id: &str) -> PathBuf {
     let manifest = load_manifest();
-    let res = manifest.resources.into_iter().find(|r| r.id == id)
-        .expect(&format!("Resource '{}' not found in manifest", id));
+    let res = manifest
+        .resources
+        .into_iter()
+        .find(|r| r.id == id)
+        .unwrap_or_else(|| panic!("Resource '{}' not found in manifest", id));
+
     PathBuf::from("test_resources").join(res.path)
 }

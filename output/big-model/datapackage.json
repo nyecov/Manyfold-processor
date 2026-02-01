@@ -1,0 +1,16 @@
+{
+  "name": "big-model",
+  "title": "big model",
+  "resources": [
+    {
+      "name": "Main Model",
+      "path": "big-model.3mf",
+      "mediaType": "model/3mf"
+    },
+    {
+      "name": "big-model_thumbnail",
+      "path": "big-model_thumbnail.webp",
+      "mediaType": "image/webp"
+    }
+  ]
+}

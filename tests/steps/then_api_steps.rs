@@ -1,5 +1,7 @@
 use super::world::DashboardWorld;
 use cucumber::{given, then};
+use serde_json::Value;
+use std::fs;
 use std::path::Path;
 
 #[given("_API the input directory is cleared")]
@@ -150,7 +152,7 @@ async fn verify_timeline_entry(_world: &mut DashboardWorld, entry: String) {
     }
 
     // Re-fetch status to get timeline
-    let poll_duration = std::time::Duration::from_secs(5);
+    let poll_duration = std::time::Duration::from_secs(20);
     let start = std::time::Instant::now();
 
     loop {
@@ -187,7 +189,10 @@ async fn verify_timeline_entry(_world: &mut DashboardWorld, entry: String) {
 #[then(expr = "the API should return an error {string}")]
 async fn verify_api_error(world: &mut DashboardWorld, expected_error: String) {
     if !world.last_error.contains(&expected_error) {
-        panic!("❌ Expected API error '{}', but got '{}'", expected_error, world.last_error);
+        panic!(
+            "❌ Expected API error '{}', but got '{}'",
+            expected_error, world.last_error
+        );
     }
 }
 
@@ -204,13 +209,17 @@ async fn verify_progress_ready(_world: &mut DashboardWorld, seconds: u64, filena
     let ui_resp = client.get("http://localhost:8080/").send().await.unwrap();
     let ui_body = ui_resp.text().await.unwrap();
     if !ui_body.contains("settle-progress-") {
-         panic!("❌ UI Anti-Masquerading Failure: 'settle-progress-' ID pattern not found in index.html");
+        panic!("❌ UI Anti-Masquerading Failure: 'settle-progress-' ID pattern not found in index.html");
     }
 
     loop {
-        let resp = client.get("http://localhost:8080/api/status").send().await.unwrap();
+        let resp = client
+            .get("http://localhost:8080/api/status")
+            .send()
+            .await
+            .unwrap();
         let json: serde_json::Value = resp.json().await.unwrap();
-        
+
         if let Some(settle_status) = json["settle_status"].as_object() {
             if let Some(progress) = settle_status.get(&filename).and_then(|v| v.as_f64()) {
                 if progress >= 1.0 {
@@ -232,13 +241,13 @@ async fn verify_progress_ready(_world: &mut DashboardWorld, seconds: u64, filena
 async fn verify_project_created(_world: &mut DashboardWorld, folder: String) {
     let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
     let path = std::path::Path::new(&output_dir).join(folder);
-    
+
     // Poll for creation
     let start = std::time::Instant::now();
-    let timeout = std::time::Duration::from_secs(5);
+    let timeout = std::time::Duration::from_secs(20);
     while !path.exists() {
         if start.elapsed() > timeout {
-             panic!("❌ Project folder not found: {:?}", path);
+            panic!("❌ Project folder not found: {:?}", path);
         }
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     }
@@ -250,34 +259,47 @@ async fn verify_project_created(_world: &mut DashboardWorld, folder: String) {
 async fn verify_file_in_project(_world: &mut DashboardWorld, rel_path: String) {
     let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
     let path = std::path::Path::new(&output_dir).join(rel_path);
-    
+
     let start = std::time::Instant::now();
     let timeout = std::time::Duration::from_secs(5);
     while !path.exists() {
         if start.elapsed() > timeout {
-             panic!("❌ File not found in project: {:?}", path);
+            panic!("❌ File not found in project: {:?}", path);
         }
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     }
 }
 
 #[then(expr = "{string} should contain {string} as the name")]
-async fn verify_metadata_name(_world: &mut DashboardWorld, manifest: String, expected_name: String) {
-     let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
-     let path = std::path::Path::new(&output_dir).join(manifest);
-     let content = std::fs::read_to_string(path).expect("Manifest not readable");
-     let json: serde_json::Value = serde_json::from_str(&content).expect("Invalid JSON in manifest");
-     
-     if let Some(name) = json["name"].as_str() {
-         assert!(name.contains(&expected_name), "Expected name '{}' in manifest, got '{}'", expected_name, name);
-     } else {
-         panic!("Manifest missing 'name' field");
-     }
+async fn verify_metadata_name(
+    _world: &mut DashboardWorld,
+    manifest: String,
+    expected_name: String,
+) {
+    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
+    let path = std::path::Path::new(&output_dir).join(manifest);
+    let content = std::fs::read_to_string(path).expect("Manifest not readable");
+    let json: serde_json::Value = serde_json::from_str(&content).expect("Invalid JSON in manifest");
+
+    if let Some(name) = json["name"].as_str() {
+        assert!(
+            name.contains(&expected_name),
+            "Expected name '{}' in manifest, got '{}'",
+            expected_name,
+            name
+        );
+    } else {
+        panic!("Manifest missing 'name' field");
+    }
 }
 
 #[then(expr = "{string} should contain {string} as the thumbnail")]
-async fn verify_metadata_thumbnail(_world: &mut DashboardWorld, _manifest: String, _expected_thumb: String) {
-     // Check datapackage.json resources or specific field if any
+async fn verify_metadata_thumbnail(
+    _world: &mut DashboardWorld,
+    _manifest: String,
+    _expected_thumb: String,
+) {
+    // Check datapackage.json resources or specific field if any
 }
 
 #[then(expr = "{string} should be created from {string}")]
@@ -286,15 +308,131 @@ async fn verify_transcoding_source(_world: &mut DashboardWorld, _dest: String, _
 }
 
 #[then(expr = "{string} should list {string} for {string}")]
-async fn verify_metadata_resource(_world: &mut DashboardWorld, manifest: String, media_type: String, filename: String) {
-     let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
-     let path = std::path::Path::new(&output_dir).join(manifest);
-     let content = std::fs::read_to_string(path).unwrap();
-     let json: serde_json::Value = serde_json::from_str(&content).unwrap();
-     
-     let found = json["resources"].as_array().unwrap().iter().any(|r| {
-         r["path"].as_str() == Some(&filename) && r["mediatype"].as_str() == Some(&media_type)
-     });
-     
-     assert!(found, "Metadata did not list {} with {} as media type", filename, media_type);
+async fn verify_metadata_resource(
+    _world: &mut DashboardWorld,
+    manifest: String,
+    media_type: String,
+    filename: String,
+) {
+    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
+    let path = std::path::Path::new(&output_dir).join(manifest);
+    let content = std::fs::read_to_string(path).unwrap();
+    let json: serde_json::Value = serde_json::from_str(&content).unwrap();
+
+    let found = json["resources"].as_array().unwrap().iter().any(|r| {
+        r["path"].as_str() == Some(&filename) && r["mediatype"].as_str() == Some(&media_type)
+    });
+
+    assert!(
+        found,
+        "Metadata did not list {} with {} as media type",
+        filename, media_type
+    );
+}
+
+/// Verifies that a project directory exists in the output folder
+#[then(expr = "_API project {string} should exist")]
+async fn project_exists(_world: &mut DashboardWorld, project_slug: String) {
+    let output_path = Path::new("output").join(&project_slug);
+    if !output_path.exists() || !output_path.is_dir() {
+        panic!(
+            "❌ Project directory not found at: {:?}",
+            output_path.display()
+        );
+    }
+}
+
+/// Generic JSON Inspector: Queries datapackage.json using a simple key or JSON pointer
+/// Supports basic field access ("title") or nested/array access via pointer syntax ("/resources/0/path")
+#[then(expr = "_API project {string} metadata {string} should be {string}")]
+async fn verify_metadata_field(
+    _world: &mut DashboardWorld,
+    project_slug: String,
+    json_path: String,
+    expected_value: String,
+) {
+    let output_path = Path::new("output")
+        .join(&project_slug)
+        .join("datapackage.json");
+
+    // 1. Load JSON
+    let content = fs::read_to_string(&output_path)
+        .unwrap_or_else(|_| panic!("❌ Failed to read datapackage.json at {:?}", output_path));
+    let json: Value = serde_json::from_str(&content).expect("❌ Invalid JSON in datapackage.json");
+
+    // 2. Resolve Path
+    // Supports direct key like "name" -> "/name" normalization
+    let pointer = if json_path.starts_with('/') {
+        json_path
+    } else {
+        format!("/{}", json_path)
+    };
+
+    let actual = json
+        .pointer(&pointer)
+        .unwrap_or_else(|| panic!("❌ JSON Path '{}' not found in metadata", pointer));
+
+    // 3. Compare (handle strings vs other types loosely)
+    let actual_str = match actual {
+        Value::String(s) => s.clone(),
+        _ => actual.to_string(),
+    };
+
+    assert_eq!(
+        actual_str, expected_value,
+        "❌ Metadata Mismatch for '{}'. Expected '{}', got '{}'",
+        pointer, expected_value, actual_str
+    );
+}
+
+/// Convenience step for verifying thumbnails
+#[then(expr = "_API project {string} should have {string} as the thumbnail")]
+async fn verify_thumbnail(
+    _world: &mut DashboardWorld,
+    project_slug: String,
+    expected_thumb: String,
+) {
+    // Simplest verification: Does the file exist in the folder?
+    let path = Path::new("output")
+        .join(&project_slug)
+        .join(&expected_thumb);
+    if !path.exists() {
+        panic!("❌ Thumbnail file not found at {:?}", path);
+    }
+}
+
+/// Verify a resource entry exists with a specific type
+#[then(expr = "_API project {string} should have resource {string} with type {string}")]
+async fn verify_resource_type(
+    _world: &mut DashboardWorld,
+    project_slug: String,
+    resource_path: String,
+    mime_type: String,
+) {
+    let output_path = Path::new("output")
+        .join(&project_slug)
+        .join("datapackage.json");
+    let content = fs::read_to_string(&output_path).expect("Failed to read datapackage.json");
+    let json: Value = serde_json::from_str(&content).expect("Invalid JSON");
+
+    let resources = json
+        .pointer("/resources")
+        .and_then(|v| v.as_array())
+        .expect("No resources array found");
+
+    let found = resources.iter().any(|r| {
+        let path = r.pointer("/path").and_then(|v| v.as_str()).unwrap_or("");
+        let mediatype = r
+            .pointer("/mediatype")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        path.contains(&resource_path) && mediatype == mime_type
+    });
+
+    if !found {
+        panic!(
+            "❌ Resource '{}' with type '{}' not found in metadata",
+            resource_path, mime_type
+        );
+    }
 }

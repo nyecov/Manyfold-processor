@@ -1,5 +1,5 @@
 use super::world::DashboardWorld;
-use cucumber::given;
+use cucumber::{given, when};
 
 #[given("_API Processor is running")]
 async fn service_is_running_api(_world: &mut DashboardWorld) {
@@ -41,6 +41,7 @@ async fn disable_auto_processing(_world: &mut DashboardWorld) {
 }
 
 #[given(expr = "{string} is in the system naming penalties")]
+#[when(expr = "{string} is in the system naming penalties")]
 async fn set_naming_penalty(_world: &mut DashboardWorld, penalty: String) {
     let client = reqwest::Client::new();
     let resp = client
