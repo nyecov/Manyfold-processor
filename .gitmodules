@@ -1,0 +1,3 @@
+[submodule "reference/manyfold"]
+	path = reference/manyfold
+	url = https://github.com/manyfold3d/manyfold
