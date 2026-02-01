@@ -62,5 +62,5 @@ volumes:
 
 ## See Also
 *   **Implementation Strategy**: [File_Format_Analysis.md](File_Format_Analysis.md) (Standard CPU-based processing rules).
-*   **Deployment Rules**: [deploy_on_radxa_rock5](../.agent/skills/deploy_on_radxa_rock5/SKILL.md) (Mandates for using NPU/RGA).
+*   **Deployment Rules**: [Architectural Guidelines](@conductor/.agent/skills/architectural_guidelines/SKILL.md) (Mandates for using NPU/RGA).
 ```

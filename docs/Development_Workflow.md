@@ -77,4 +77,4 @@ The `processor-dev` service activates only when explicitly requested with `--pro
 
 ---
 
-**See Also**: [Deployment Operations](../.agent/skills/deployment_operations/SKILL.md)
+**See Also**: [Architectural Guidelines](@conductor/.agent/skills/architectural_guidelines/SKILL.md)

@@ -12,8 +12,8 @@ This document provides a high-level overview of the **Defensive Orchestration** 
 | **Hybrid Model** | Workflow = Manager (Prompt). Script = Worker (Tool). |
 
 ## Core Documents
-*   **Full Skill**: [Agentic Philosophy](../.agent/skills/agentic_philosophy/SKILL.md)
-*   **Workflows**: [Project Workflows](../.agent/skills/project_workflows/SKILL.md)
+*   **Full Skill**: [Agentic Philosophy](@conductor/.agent/skills/agentic_philosophy/SKILL.md)
+*   **Workflows**: [Project Workflows](@conductor/.agent/skills/project_workflows/SKILL.md)
 
 ## Self-Healing Protocol
 1.  **Reactive**: Run `/suite_full_audit` → Fix drift.

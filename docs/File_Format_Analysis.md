@@ -67,5 +67,5 @@ This document details the internal structure and processing strategy for support
 
 ## See Also
 *   **Hardware Optimization**: [Hardware_Acceleration_Research.md](Hardware_Acceleration_Research.md) (Offloading image tasks to RGA).
-*   **Specialized Skill**: [stl_handling](../.agent/skills/stl_handling/SKILL.md)
-*   **Specialized Skill**: [3mf_handling](../.agent/skills/3mf_handling/SKILL.md)
+*   **Specialized Skill**: [stl_specification](@conductor/.agent/skills/stl_specification/SKILL.md)
+*   **Specialized Skill**: [3mf_specification](@conductor/.agent/skills/3mf_specification/SKILL.md)
