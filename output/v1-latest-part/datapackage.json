@@ -1,0 +1,11 @@
+{
+  "name": "v1-latest-part",
+  "title": "v1 latest part",
+  "resources": [
+    {
+      "name": "Main Model",
+      "path": "v1-latest-part.3mf",
+      "mediaType": "model/3mf"
+    }
+  ]
+}

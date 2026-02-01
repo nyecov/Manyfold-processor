@@ -1,0 +1,16 @@
+{
+  "name": "trigger-anim",
+  "title": "trigger anim",
+  "resources": [
+    {
+      "name": "Main Model",
+      "path": "trigger-anim.3mf",
+      "mediaType": "model/3mf"
+    },
+    {
+      "name": "trigger-anim_thumbnail",
+      "path": "trigger-anim_thumbnail.gif",
+      "mediaType": "image/gif"
+    }
+  ]
+}

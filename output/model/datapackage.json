@@ -1,0 +1,16 @@
+{
+  "name": "model",
+  "title": "model",
+  "resources": [
+    {
+      "name": "Main Model",
+      "path": "model.3mf",
+      "mediaType": "model/3mf"
+    },
+    {
+      "name": "model_thumbnail",
+      "path": "model_thumbnail.gif",
+      "mediaType": "image/gif"
+    }
+  ]
+}

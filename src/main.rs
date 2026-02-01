@@ -1,4 +1,7 @@
+mod config;
+mod geometry;
 mod hal;
+mod metadata;
 mod web;
 
 #[tokio::main]

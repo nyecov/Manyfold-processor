@@ -17,6 +17,11 @@ The detailed documentation for this project is maintained as **Agent Skills**. P
 *   [**Manyfold API Integration**](.agent/skills/manyfold_api_integration/SKILL.md): How to talk to Manyfold via Tus/JSON.
 *   [**Deploy on Radxa Rock 5**](.agent/skills/deploy_on_radxa_rock5/SKILL.md): Hardware-specific deployment guide.
 
+### 🧠 Strategic Docs
+*   [**Agentic Philosophy**](docs/Agentic_Philosophy.md): How we use Agents.
+*   [**Language Analysis**](docs/Language_Analysis.md): Why we chose Rust.
+*   [**Improvement Plan**](notes/token_efficiency_improvement_plan.md): Current Roadmap.
+
 ## 🛠️ Development
 
 This project is being rewritten in **Rust**.
