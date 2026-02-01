@@ -82,15 +82,19 @@ async fn verify_output_file(_world: &mut DashboardWorld, filename: String) {
     // Poll for a short duration to allow processing to finish
     let poll_duration = std::time::Duration::from_secs(20);
     let start = std::time::Instant::now();
-    
+
     loop {
         if path.exists() {
             println!("✅ File found in output directory: {:?}", filename);
             return;
         }
-        
+
         if start.elapsed() > poll_duration {
-            panic!("❌ File not found in output directory after {}s: {:?}", poll_duration.as_secs(), path.display());
+            panic!(
+                "❌ File not found in output directory after {}s: {:?}",
+                poll_duration.as_secs(),
+                path.display()
+            );
         }
         tokio::time::sleep(std::time::Duration::from_millis(500)).await;
     }
@@ -133,7 +137,10 @@ async fn verify_timeline_contain_wait(_world: &mut DashboardWorld, seconds: u64,
             let events_debug =
                 if let Ok(res) = client.get("http://localhost:8080/api/status").send().await {
                     if let Ok(json) = res.json::<serde_json::Value>().await {
-                        json["timeline_events"].as_array().cloned().unwrap_or_default()
+                        json["timeline_events"]
+                            .as_array()
+                            .cloned()
+                            .unwrap_or_default()
                     } else {
                         vec![]
                     }

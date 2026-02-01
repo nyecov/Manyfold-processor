@@ -31,7 +31,7 @@ async fn request_processing(world: &mut DashboardWorld, filename: String) {
 
         if let Ok(json) = serde_json::from_str::<serde_json::Value>(&world.last_response_body) {
             world.last_error = json["message"].as_str().unwrap_or("").to_string();
-            
+
             // If it's still settling, wait and retry
             if world.last_error == "File is still settling" && start.elapsed() < timeout {
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;

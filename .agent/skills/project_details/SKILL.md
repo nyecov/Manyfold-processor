@@ -6,8 +6,10 @@ description: Key project metadata, repository links, and maintenance info.
 # Project Details
 
 ## Repository
-*   **Remote URL**: `https://github.com/nyecov/Manyfold-processor`
+*   **Remote URL**: `https://github.com/nyecov/Manyfold-processor` (Original)
+*   **Nomos URL**: `https://github.com/nyecov/Nomos` (Agent Framework)
 *   **Branch**: `main` (default)
+*   **Note**: This project gave birth to **Nomos**, the generalized AI agent framework. See [Nomos Specification](../nomos_specification/SKILL.md).
 
 ## Status
 > [!NOTE]

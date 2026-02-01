@@ -3,6 +3,10 @@
 <!-- audited_by: .agent/workflows/audit_gherkin.md -->
 
 We employ a **Dual-Track Verification** strategy to maximize speed and stability while ensuring coverage.
+ > [!WARNING]
+ > **TESTS ARE CURRENTLY ARCHIVED**
+ > As of 2026-02-01, the BDD tests have been moved to `tests/archive/` due to stability issues ("kinks") that need work. The strategy below applies to the tests when they are active.
+ > See `tests/archive/ARCHIVE_README.md` for more details.
 
 ## 1. The Separation of Concerns
 
