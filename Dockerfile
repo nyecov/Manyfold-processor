@@ -8,7 +8,10 @@ WORKDIR /usr/src/app
 
 # 1. Create a dummy project to cache dependencies
 RUN cargo init
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
+# Copy lockfile if it exists, otherwise generate it
+COPY Cargo.lock* ./
+# Install external dependencies if any (e.g., openssl)
 # Install external dependencies if any (e.g., openssl)
 RUN apt-get update && apt-get install -y pkg-config libssl-dev && rm -rf /var/lib/apt/lists/*
 
