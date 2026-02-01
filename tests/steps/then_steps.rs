@@ -18,8 +18,8 @@ async fn verify_column_presence(_world: &mut DashboardWorld, column_name: String
 async fn verify_status_alignment(_world: &mut DashboardWorld) {
     // Structural check: grid columns defined
     let html = fs::read_to_string("static/index.html").expect("Failed to read index.html");
-    if !html.contains("grid-cols-[1fr_100px_100px_140px]") {
-        panic!("❌ Grid layout for alignment missing.");
+    if !html.contains("grid-cols-[1fr_100px_100px_100px_140px]") {
+        panic!("❌ Grid layout for alignment missing (expected 5 columns).");
     }
 }
 

@@ -12,6 +12,11 @@ sha2 = "0.10"
 hex = "0.4"
 chrono = "0.4"
 regex = "1.5"
+clap = { version = "4.0", features = ["derive"] }
+
+[[bin]]
+name = "check_test_resources"
+path = "src/bin/check_test_resources.rs"
 
 [[bin]]
 name = "audit_dependencies"

@@ -1,5 +1,5 @@
 use super::world::DashboardWorld;
-use cucumber::given;
+use cucumber::{gherkin::Step, given};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -40,6 +40,51 @@ async fn create_dummy_file(_world: &mut DashboardWorld, filename: String) {
         }
     } else {
         writeln!(file, "dummy content").expect("Failed to write to dummy file");
+    }
+}
+
+#[given(regex = "^\"([^\"]+)\" \\(([^)]+)\\) is in the input directory$")]
+async fn create_file_with_size_desc(_world: &mut DashboardWorld, filename: String, size_desc: String) {
+    create_file_internal(filename, Some(size_desc));
+}
+
+#[given(expr = "{string} is in the input directory")]
+async fn create_file_default(_world: &mut DashboardWorld, filename: String) {
+    create_file_internal(filename, None);
+}
+
+fn create_file_internal(filename: String, size_desc: Option<String>) {
+    let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
+    let path = Path::new(&input_dir).join(&filename);
+    
+    let size: u64 = if let Some(desc) = size_desc {
+        if desc.to_lowercase().contains("mb") {
+            desc.replace("MB", "").trim().parse::<u64>().unwrap_or(1) * 1024 * 1024
+        } else if desc.to_lowercase().contains("kb") {
+            desc.replace("KB", "").trim().parse::<u64>().unwrap_or(1) * 1024
+        } else {
+            1024 // Default 1KB
+        }
+    } else {
+        1024 // Default 1KB
+    };
+
+    let file = File::create(&path).expect("Failed to create file");
+    file.set_len(size).expect("Failed to set file size");
+}
+
+#[given("several files are in the input directory:")]
+async fn create_multiple_files(_world: &mut DashboardWorld, step: &Step) {
+    let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
+
+    if let Some(table) = step.table.as_ref() {
+        // Skip header row
+        for row in table.rows.iter().skip(1) {
+            let filename = &row[0];
+            let path = Path::new(&input_dir).join(filename);
+            let mut file = File::create(&path).expect("Failed to create dummy file from table");
+            writeln!(file, "batch content").expect("Failed to write to batch file");
+        }
     }
 }
 

@@ -28,3 +28,9 @@ Manyfold_reference/
 
 # Agent Tool Cache (Phase 1.5)
 .agent/tools/.audit_cache
+
+# Large/Binary Files
+*.zip
+*.rar
+*.stl
+*.3mf

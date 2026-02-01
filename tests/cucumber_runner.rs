@@ -9,6 +9,7 @@
 use cucumber::World;
 
 mod steps;
+pub mod support;
 
 // Import step modules to register them with Cucumber
 // The `#[given]`, `#[when]`, `#[then]` attributes register steps at compile time

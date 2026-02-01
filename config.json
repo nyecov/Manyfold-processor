@@ -1,0 +1,7 @@
+{
+  "naming_penalties": [
+    "base"
+  ],
+  "auto_process_enabled": false,
+  "network_settle_seconds": 2.0
+}

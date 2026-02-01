@@ -72,6 +72,38 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        /* Toast Styles */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .modal-backdrop {
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(8px);
+        }
     </style>
 </head>
 
@@ -233,13 +265,136 @@
         </div>
     </main>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+        <div class="absolute inset-0 modal-backdrop" onclick="closeSettings()"></div>
+        <div class="glass relative w-full max-w-lg rounded-3xl p-8 shadow-2xl border-white/10">
+            <h2 class="text-2xl font-bold mb-6">System Configuration</h2>
+
+            <div class="space-y-6">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Network
+                        Stability Buffer</label>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="settle-slider" min="0.5" max="30" step="0.5"
+                            class="flex-1 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                        <span id="settle-value" class="text-sm font-mono w-12 text-blue-400">2.0s</span>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2 italic">Increase if Samba/Network transfers are resulting
+                        in broken files.</p>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">Naming Penalties
+                        (Comma Separated)</label>
+                    <input type="text" id="penalties-input"
+                        class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500/50 transition-colors">
+                    <p class="text-[10px] text-gray-500 mt-2 font-medium">STL files containing these terms will be
+                        deprioritized during project naming.</p>
+                </div>
+            </div>
+
+            <div class="mt-10 flex gap-4">
+                <button onclick="saveSettings()"
+                    class="flex-1 accent-gradient py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-transform">
+                    Save Configuration
+                </button>
+                <button onclick="closeSettings()"
+                    class="px-6 py-3 rounded-xl glass hover:bg-white/10 text-sm font-bold transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
     <script>
         console.log("Manyfold Processor UI Initialized");
 
-        // Gear Button Logic
-        function showSettings() {
-            alert("System Configuration:\n\nMode: Tier 1 (Mock)\nAPI: Connected\nLog Level: INFO\n\nFull settings panel coming in v0.6");
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), 3);
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
+
+        // Toast System
+        function showToast(message, duration = 3000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // Auto hide
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // UI State cache 
+        let lastQueueState = "";
+        let lastTimelineState = "";
+        let selectionBuffer = {
+            thumbnail: null, // filename
+        };
+        let currentSettleStatus = {};
+
+        // Gear Button Logic
+        async function showSettings() {
+            try {
+                const res = await fetch('/api/config/settings');
+                const settings = await res.json();
+
+                document.getElementById('settle-slider').value = settings.network_settle_seconds;
+                document.getElementById('settle-value').innerText = settings.network_settle_seconds.toFixed(1) + 's';
+                document.getElementById('penalties-input').value = settings.naming_penalties.join(', ');
+
+                document.getElementById('settings-modal').classList.remove('hidden');
+                document.getElementById('settings-modal').classList.add('flex');
+            } catch (e) {
+                showToast("Failed to load settings");
+            }
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('flex');
+        }
+
+        async function saveSettings() {
+            const buffer = parseFloat(document.getElementById('settle-slider').value);
+            const penalties = document.getElementById('penalties-input').value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+            try {
+                const response = await fetch('/api/config/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        network_settle_seconds: buffer,
+                        naming_penalties: penalties
+                    })
+                });
+                if (response.ok) {
+                    showToast("Configuration Saved");
+                    closeSettings();
+                    fetchStatus();
+                }
+            } catch (e) {
+                showToast("Save failed");
+            }
+        }
+
+        document.getElementById('settle-slider').oninput = (e) => {
+            document.getElementById('settle-value').innerText = parseFloat(e.target.value).toFixed(1) + 's';
+        };
+
         // Attach to gear button
         document.querySelector('button.glass').onclick = showSettings;
 
@@ -284,76 +439,134 @@
                     toggle.checked = data.auto_process_enabled;
                 }
 
-                // Render Queue Items
                 const queueList = document.getElementById('queue-list');
-                const headerHTML = `
-                    <div class="sticky top-0 z-10 bg-[#0f172a]/90 backdrop-blur-md px-4 py-3 grid grid-cols-[1fr_100px_100px_140px] gap-4 border-b border-white/10 mb-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                        <span>FILENAME</span>
-                        <span class="text-center block w-full">TYPE</span>
-                        <span class="text-center block w-full">STATUS</span>
-                        <span class="text-right">ACTION</span>
-                    </div>`;
+                const timeline = document.getElementById('timeline');
 
-                if (data.queue_items && data.queue_items.length > 0) {
-                    const itemsHTML = data.queue_items.map(item => {
-                        const name = item.toLowerCase();
-                        let type = 'Asset';
-                        let typeClass = 'bg-blue-500/10 text-blue-400';
+                // Render Queue Items (only if state changed)
+                const currentQueueState = JSON.stringify(data.queue_items_with_size) + JSON.stringify(data.settle_status);
+                if (currentQueueState !== lastQueueState) {
+                    lastQueueState = currentQueueState;
+                    currentSettleStatus = data.settle_status || {};
 
-                        if (name.endsWith('.3mf')) {
-                            type = 'Package';
-                            typeClass = 'bg-violet-500/10 text-violet-400';
-                        } else if (name.endsWith('.stl')) {
-                            type = 'Model';
-                            typeClass = 'bg-emerald-500/10 text-emerald-400';
-                        }
-
-                        return `
-                        <div class="px-4 py-3 grid grid-cols-[1fr_100px_100px_140px] gap-4 items-center hover:bg-white/5 transition-colors group rounded-xl">
-                            <span class="text-sm font-medium text-gray-300 truncate">${item}</span>
-                            <span class="px-2 py-0.5 rounded-md ${typeClass} text-[10px] font-bold uppercase tracking-wider text-center w-fit justify-self-center mx-auto">
-                                ${type}
-                            </span>
-                            <span class="flex items-center gap-2 text-xs font-semibold text-gray-500 justify-self-center mx-auto">
-                                <div class="w-1.5 h-1.5 rounded-full bg-blue-500 status-pulse"></div>
-                                Staged
-                            </span>
-                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="deleteFile('${item}')" class="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors" title="Delete">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                                <button onclick="processFile('${item}')" class="px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-colors">
-                                    Process
+                    const headerHTML = `
+                        <div class="sticky top-0 z-10 bg-[#0f172a]/90 backdrop-blur-md px-4 py-3 grid grid-cols-[1fr_80px_100px_100px_100px_140px] gap-4 border-b border-white/10 mb-2 text-xs font-bold text-gray-500 uppercase tracking-widest items-center">
+                            <span>FILENAME</span>
+                            <span class="text-center">THUMB</span>
+                            <span class="text-center">SIZE</span>
+                            <span class="text-center">TYPE</span>
+                            <span class="text-center">STATUS</span>
+                            <div class="flex items-center justify-end gap-2">
+                                <span>ACTION</span>
+                                <button onclick="deleteAllFiles()" class="p-1 rounded-md hover:bg-red-500/20 text-red-400/40 hover:text-red-400 transition-all" title="Delete All">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 </button>
                             </div>
-                        </div>
-                    `}).join('');
-                    queueList.innerHTML = headerHTML + itemsHTML;
-                } else {
-                    queueList.innerHTML = headerHTML + '<div class="p-4 text-center text-gray-500 text-sm">Queue is empty</div>';
-                }
+                        </div>`;
 
-                // Render Timeline
-                const timeline = document.getElementById('timeline');
-                if (data.timeline_events && data.timeline_events.length > 0) {
-                    timeline.innerHTML = data.timeline_events.slice().reverse().map(event => {
-                        const [type, ...rest] = event.split(': ');
-                        const desc = rest.join(': ');
-                        return `
-                            <div class="flex gap-3 text-[10px]">
-                                <span class="text-gray-500">${new Date().toLocaleTimeString([], { hour12: false })}</span>
-                                <span class="text-blue-400 font-bold">${type.toUpperCase()}</span>
-                                <span class="text-gray-300">${desc}</span>
+                    if (data.queue_items_with_size && data.queue_items_with_size.length > 0) {
+                        const itemsHTML = data.queue_items_with_size.map(([item, size]) => {
+                            const name = item.toLowerCase();
+                            let type = 'Asset';
+                            let typeClass = 'bg-blue-500/10 text-blue-400';
+                            let isImage = false;
+
+                            if (name.endsWith('.3mf')) {
+                                type = 'Package';
+                                typeClass = 'bg-violet-500/10 text-violet-400';
+                            } else if (name.endsWith('.stl')) {
+                                type = 'Model';
+                                typeClass = 'bg-emerald-500/10 text-emerald-400';
+                            } else {
+                                isImage = ['.jpg', '.png', '.webp', '.gif'].some(ext => name.endsWith(ext));
+                            }
+
+                            const settleProgress = data.settle_status[item] || 0;
+                            const isReady = settleProgress >= 1.0;
+
+                            let statusHTML = `
+                                <span class="flex items-center gap-2 text-xs font-semibold text-gray-500 justify-self-center mx-auto">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500 status-pulse"></div>
+                                    Staged
+                                </span>`;
+
+                            if (!isReady) {
+                                statusHTML = `
+                                <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden" title="Settling...">
+                                    <div class="h-full bg-blue-500/30 transition-all duration-500" style="width: ${settleProgress * 100}%"></div>
+                                </div>`;
+                            }
+
+                            return `
+                            <div class="px-4 py-3 grid grid-cols-[1fr_80px_100px_100px_100px_140px] gap-4 items-center hover:bg-white/5 transition-colors group rounded-xl">
+                                <span class="text-sm font-medium text-gray-300 truncate flex items-center gap-2">
+                                    ${item}
+                                    ${item.toLowerCase().endsWith('.stl') ? `<span class="text-yellow-500 text-sm hidden collision-warn-${item.replace(/[^a-z0-9]/gi, '_')}" title="Folder already exists in output">⚠</span>` : ''}
+                                </span>
+                                <div class="justify-self-center">
+                                    ${isImage ? `
+                                        <input type="radio" name="thumb_select" value="${item}" 
+                                            ${selectionBuffer.thumbnail === item ? 'checked' : ''}
+                                            onchange="selectionBuffer.thumbnail = '${item}'"
+                                            class="w-4 h-4 rounded-full border-2 border-white/20 bg-transparent checked:bg-blue-500 checked:border-blue-500 appearance-none cursor-pointer hover:border-blue-400 transition-all">
+                                    ` : ''}
+                                </div>
+                                <span class="text-xs font-semibold text-gray-400 text-center">${formatBytes(size)}</span>
+                                <span class="px-2 py-0.5 rounded-md ${typeClass} text-[10px] font-bold uppercase tracking-wider text-center w-fit justify-self-center mx-auto">
+                                    ${type}
+                                </span>
+                                ${statusHTML}
+                                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="deleteFile('${item}')" class="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors" title="Delete">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                    <button onclick="processFile('${item}')" 
+                                        ${!isReady ? 'disabled' : ''}
+                                        class="px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                        Process
+                                    </button>
+                                </div>
                             </div>
                         `;
-                    }).join('');
-                } else {
-                    timeline.innerHTML = `
-                        <div class="flex gap-3 text-[10px]">
-                            <span class="text-gray-500">SYSTEM</span>
-                            <span class="text-blue-400">READY</span>
-                            <span class="text-gray-300">Web UI Initialized. Waiting for events...</span>
-                        </div>`;
+                        }).join('');
+                        queueList.innerHTML = headerHTML + itemsHTML;
+                    } else {
+                        queueList.innerHTML = headerHTML + '<div class="p-4 text-center text-gray-500 text-sm">Queue is empty</div>';
+                    }
+                }
+
+                // Render Timeline (only if state changed)
+                const currentTimelineState = JSON.stringify(data.timeline_events);
+                if (currentTimelineState !== lastTimelineState) {
+                    lastTimelineState = currentTimelineState;
+                    if (data.timeline_events && data.timeline_events.length > 0) {
+                        timeline.innerHTML = data.timeline_events.slice().reverse().map(event => {
+                            const [type, ...rest] = event.split(': ');
+                            const desc = rest.join(': ');
+                            return `
+                                <div class="flex gap-3 text-[10px]">
+                                    <span class="text-gray-500">${new Date().toLocaleTimeString([], { hour12: false })}</span>
+                                    <span class="text-blue-400 font-bold">${type.toUpperCase()}</span>
+                                    <span class="text-gray-300">${desc}</span>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        timeline.innerHTML = `
+                            <div class="flex gap-3 text-[10px]">
+                                <span class="text-gray-500">SYSTEM</span>
+                                <span class="text-blue-400">READY</span>
+                                <span class="text-gray-300">Web UI Initialized. Waiting for events...</span>
+                            </div>`;
+                    }
+                }
+
+                // Handle Collision Warnings
+                if (data.collisions) {
+                    data.collisions.forEach(f => {
+                        const id = f.replace(/[^a-z0-9]/gi, '_');
+                        const el = document.querySelector(`.collision-warn-${id}`);
+                        if (el) el.classList.remove('hidden');
+                    });
                 }
 
             } catch (error) {
@@ -368,48 +581,75 @@
         // Clear Timeline Logic
         const clearBtn = document.getElementById('clear-timeline-btn');
         clearBtn.onclick = async () => {
-            if (!confirm("Clear all timeline events?")) return;
             try {
                 await fetch('/api/actions/clear-timeline', { method: 'POST' });
+                showToast("Timeline cleared");
                 document.getElementById('timeline').innerHTML = ''; // Immediate local clear
                 fetchStatus(); // Refresh status counts
             } catch (e) {
                 console.error("Clear failed", e);
+                showToast("Failed to clear timeline");
             }
         };
+
         // Delete File Logic
         async function deleteFile(filename) {
-            if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
             try {
                 const response = await fetch(`/api/actions/delete-file/${encodeURIComponent(filename)}`, {
                     method: 'DELETE'
                 });
                 if (response.ok) {
+                    showToast(`Deleted ${filename}`);
                     fetchStatus();
                 } else {
-                    alert("Delete failed. File may no longer exist.");
+                    showToast(`Failed to delete ${filename}`);
                 }
             } catch (e) {
                 console.error("Delete failed", e);
+                showToast("Network error during delete");
+            }
+        }
+
+        async function deleteAllFiles() {
+            try {
+                const response = await fetch('/api/actions/delete-all', { method: 'POST' });
+                if (response.ok) {
+                    const data = await response.json();
+                    showToast(`Cleared ${data.count} files`);
+                    fetchStatus();
+                } else {
+                    showToast("Failed to clear input folder");
+                }
+            } catch (e) {
+                console.error("Delete all failed", e);
+                showToast("Network error during batch delete");
             }
         }
 
         async function processFile(filename) {
-            if (!confirm(`Process ${filename} to WebP?`)) return;
+            if (currentSettleStatus[filename] < 1.0) {
+                showToast("File is still settling");
+                return;
+            }
+
             try {
                 const response = await fetch(`/api/actions/process/${encodeURIComponent(filename)}`, {
-                    method: 'POST'
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        thumbnail_hint: selectionBuffer.thumbnail
+                    })
                 });
                 if (response.ok) {
-                    alert('Processing started.');
+                    showToast(`Processing ${filename}...`);
                     fetchStatus();
                 } else {
-                    const txt = await response.text();
-                    alert("Processing failed: " + txt);
+                    const data = await response.json();
+                    showToast(`Failed: ${data.message || 'Error'}`);
                 }
             } catch (e) {
                 console.error("Process failed", e);
-                alert("Processing request failed.");
+                showToast("Network error during processing");
             }
         }
     </script>

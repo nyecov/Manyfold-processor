@@ -43,6 +43,7 @@ To counteract the risks of high-velocity agentic changes (drift, hallucination, 
 *   **`/audit_consistency`**: Checks logical integrity across the knowledge base.
 *   **`/audit_gherkin`**: Verifies BDD scenario quality and layering.
 *   **`/audit_masquerading`**: **[HYBRID]** Audits UI-named steps for direct API calls to prevent false positives.
+*   **`/audit_test_resources`**: **[HYBRID]** Validates the binary test asset registry for orphans and metadata quality.
 *   **`/audit_step_glue`**: Verifies alignment between Gherkin and Rust.
 *   **`/audit_infrastructure`**: Checks codebase/Docker against design mandates.
 *   **`/audit_constants`**: Checks for hardcoded values vs `constants.yml`.
@@ -98,6 +99,7 @@ Workflows use scripts for **atomic checks** while agents handle **semantic analy
 |------|----------|-----------|
 | `audit_dependencies.exe` | `/audit_dependencies` | Validates 'requires:' fields in skills |
 | `audit_masquerading.exe` | `/audit_masquerading` | Undocumented |
+| `check_test_resources.exe` | `/audit_test_resources` | Validates manifest schema, integrity, and orphans |
 | `check_consistency.exe` | `/audit_consistency` | Checks logical integrity (TODOs, TBDs) across KB |
 | `check_constants.exe` | `/audit_constants` | Checks for hardcoded values vs constants.yml |
 | `check_context.exe` | `/audit_context` | Evaluates semantic organization (Strategy vs Reference) |

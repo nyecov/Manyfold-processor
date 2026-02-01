@@ -85,3 +85,40 @@ async fn click_clear_timeline(_world: &mut DashboardWorld) {
         Err(e) => panic!("Network error clearing timeline: {}", e),
     }
 }
+
+#[when("I click the \"Delete All\" button in the queue header")]
+async fn click_delete_all(_world: &mut DashboardWorld) {
+    let client = reqwest::Client::new();
+
+    // UI Anti-Masquerading: Verify the button exists in UI via its JS function call in HTML
+    let ui_resp = client.get("http://localhost:8080/").send().await;
+    match ui_resp {
+        Ok(res) => {
+            let body = res.text().await.unwrap_or_default();
+            if !body.contains("onclick=\"deleteAllFiles()\"") {
+                panic!("❌ CAUSE: UI ANTI-MASQUERADING DETECTED. The 'Delete All' button is MISSING from the UI Dashboard. Step failed to avoid false positive via API bypass.");
+            }
+        }
+        Err(e) => panic!("❌ Failed to reach UI for anti-masquerading check: {}", e),
+    }
+
+    // Proceed with action
+    let resp = client
+        .post("http://localhost:8080/api/actions/delete-all")
+        .send()
+        .await;
+
+    match resp {
+        Ok(res) => {
+            if !res.status().is_success() {
+                panic!("Failed to delete all files: {}", res.status());
+            }
+        }
+        Err(e) => panic!("Network error deleting all files: {}", e),
+    }
+}
+
+#[when(expr = "I wait {float} seconds")]
+async fn wait_seconds(_world: &mut DashboardWorld, seconds: f64) {
+    tokio::time::sleep(std::time::Duration::from_millis((seconds * 1000.0) as u64)).await;
+}

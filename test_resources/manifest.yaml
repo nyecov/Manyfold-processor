@@ -1,0 +1,93 @@
+schema_version: '1.0'
+resources:
+- id: sophia_stl
+  path: sophia/sophia-35mm-sophia.stl
+  type: stl
+  tags: [valid, high-poly, organic, large, reference-model]
+  description: A 35mm scan of Sophia. High-poly organic model useful for stress testing large file uploads and aggregation. Primary source for 'sophia_jpg'.
+  checksum: 054d4f82d7c5e286f81ba1aa970d9cab57a00a539cd5162e606744d280c00556
+  size_bytes: 100013484
+- id: sophia_jpg
+  path: sophia/720X720-sophia-new.jpg
+  type: image
+  tags: [valid, thumbnail, metadata-source]
+  description: Thumbnail image for 'sophia_stl'. Useful for testing image association and metadata extraction.
+  checksum: f539a725f80dc64484bc09b36713aa462c8db32e5247e8714d8c48e4762409be
+  size_bytes: 178223
+- id: iron_man_nozzle_3mf
+  path: 3mf/multiple object/multiple plates/IRON+MAN+BODY+PARTS+-+Nozzle_04.3mf
+  type: 3mf
+  tags: [valid, makerworld, rich-metadata, multi-plate, multi-part]
+  description: A rich MakerWorld 3MF file containing Iron Man body parts. Contains multiple build plates, embedded thumbnails, and model pictures.
+  checksum: 8a53ab0e8737f212bce5160059e50749f4dd807ac9e988f11551888404807136
+  size_bytes: 34602281
+- id: simple_cube_stl
+  path: cube/cube.stl
+  type: stl
+  tags: [valid, simple, geometric, small]
+  description: A basic geometric cube STL. Small file size, intended as a lightweight baseline test for geometry parsing.
+  checksum: 93391dcf42341659dfa6340e5220f0330747979f20d957a9cb6a794fba062410
+  size_bytes: 684
+- id: simple_cube_3mf
+  path: cube/cube_generic3mf.3mf
+  type: 3mf
+  tags: [valid, simple, geometric, generic-3mf]
+  description: Generic 3MF version of the simple cube. Sparse metadata compared to MakerWorld files. Useful for testing fallback parsing.
+  checksum: c4d04898687145863fbe25b21d781cf985ce023d6e5c8d86b9699dee630a50dc
+  size_bytes: 24237
+- id: krieg_engineers_7z
+  path: multiple separate models/multiple objects/Krieg engineers.7z
+  type: archive
+  tags: [valid, 7z, multi-model, multi-part, complex-directory]
+  description: 7z archive containing multiple subfolders (regular and compressed). specific models with multiple parts and versions (supported/unsupported).
+  checksum: 8d15683f762c885f8737ae29aeec511bf111159d11a85034eeddafa472126bfb
+  size_bytes: 94720573
+- id: krieg_killteam_zip
+  path: multiple separate models/multiple objects/Krieg Killteam Scan perfect.zip
+  type: archive
+  tags: [valid, zip, multi-model, multi-part, complex-directory]
+  description: Zip archive with nested structure similar to 'krieg_engineers_7z'. Contains multiple models and versions.
+  checksum: 1825fc24e48709fd6791d1805ad8e421e4c53e5c821c15f2000650854090e2c7
+  size_bytes: 229896581
+- id: commissar_rar
+  path: rar/multiple object/Commissar new.rar
+  type: archive
+  tags: [valid, rar, single-model, multi-part]
+  description: RAR archive containing a single model split into multiple parts.
+  checksum: 09b2f71028b6f4d03016529d83b50ed5e567d1a2028bbbd8d63eafca1a87b7e1
+  size_bytes: 87544843
+- id: goblins_zip
+  path: zip/single model/multiple models/multiple versions/GoblingHobbies_Goblins.zip
+  type: archive
+  tags: [valid, zip, multi-model, variations]
+  description: Zip archive containing multiple variations of Goblin models.
+  checksum: 8e556534c171461ae470e0c11038bd112463b71767195c37e6c8080ca3752b8c
+  size_bytes: 731078973
+- id: skaven_plague_monk_zip
+  path: zip/single model/Skaven_Ratman Plague Monk - 4150264.zip
+  type: archive
+  tags: [valid, zip, single-model, rich-metadata]
+  description: Zip archive containing a single Skaven model, but includes extra images and metadata files.
+  checksum: dbf3a2c59b00731d1153e5d8ab5726cab0494df5f9131dfdf9eb2e3221091a4c
+  size_bytes: 68421495
+- id: cawl_stl
+  path: big/Cawl.stl
+  type: stl
+  tags: [valid, stl, large, complex, organic, stress-test]
+  description: A large single STL model of Cawl. Very big file size, intended for capacity and timeout stress testing.
+  checksum: db25488421b20a17df30b27b37df156487fe9cc37b1f2d70faad96f5e9ae94dc
+  size_bytes: 258859884
+- id: animated_gif_dave
+  path: generic images/free-dave-chappelle.gif
+  type: image
+  tags: [valid, gif, animated]
+  description: An animated GIF file. Useful for testing image handling libraries that might choke on multi-frame images.
+  checksum: e2aec3c96e013e0e4fa0d0ebc1a18a98e0120201733a0d787a25e48e1ab37c5a
+  size_bytes: 524088
+- id: yellow_gift_jpg
+  path: generic images/Yellow gift with golden ribbon icon sign or symbol 3d background illustration.jpg
+  type: image
+  tags: [valid, jpg, large-image, long-filename]
+  description: A standard JPG image with a very long filename. Useful for testing filename truncation or buffer limits.
+  checksum: d9295e6a7640e7db221934dd891f8befbf2467f33c91320982f3052d6903b524
+  size_bytes: 1543919
