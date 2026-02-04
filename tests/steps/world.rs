@@ -22,6 +22,8 @@ pub struct DashboardWorld {
     pub last_error: String,
     // Wrapped Browser
     pub browser_wrapper: Option<BrowserWrapper>,
+    // Satellite Context
+    pub last_satellite_response: Option<serde_json::Value>,
 }
 
 impl DashboardWorld {
