@@ -44,6 +44,6 @@ async fn main() {
     // 🚀 Phase 2: Cucumber Feature Execution
     DashboardWorld::cucumber()
         .max_concurrent_scenarios(1) // 🛡️ Prevent interference in shared localhost environment
-        .run_and_exit("tests/features/satellite_root")
+        .run_and_exit("c:/Users/Furiosa/Desktop/Nomos/tests/features")
         .await;
 }

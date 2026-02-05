@@ -24,6 +24,9 @@ pub struct DashboardWorld {
     pub browser_wrapper: Option<BrowserWrapper>,
     // Satellite Context
     pub last_satellite_response: Option<serde_json::Value>,
+    // Refinement Orbit (v1.1)
+    pub exclusion_registry: Vec<String>,
+    pub consensus_stratum: u8,
 }
 
 impl DashboardWorld {
