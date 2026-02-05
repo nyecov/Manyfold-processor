@@ -1,8 +1,18 @@
 use super::world::DashboardWorld;
-use cucumber::{gherkin::Step, given};
+use cucumber::{gherkin::Step, given, when};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+
+#[given(expr = "the processor is running with \"DashMap\" enabled")]
+async fn processor_running_dashmap(_world: &mut DashboardWorld) {
+    let client = reqwest::Client::new();
+    let resp = client.get("http://localhost:8080/health")
+        .send()
+        .await
+        .expect("Processor not reachable at http://localhost:8080");
+    assert!(resp.status().is_success());
+}
 
 #[given(expr = "a file {string} is in the input directory")]
 async fn create_dummy_file(_world: &mut DashboardWorld, filename: String) {

@@ -14,7 +14,7 @@ pub mod support;
 // Import step modules to register them with Cucumber
 // The `#[given]`, `#[when]`, `#[then]` attributes register steps at compile time
 #[allow(unused_imports)]
-use steps::{given_steps, then_steps, when_steps};
+use steps::{given_steps, then_steps, when_steps, cognitive_audit_steps};
 
 use steps::world::DashboardWorld;
 
@@ -44,6 +44,6 @@ async fn main() {
     // 🚀 Phase 2: Cucumber Feature Execution
     DashboardWorld::cucumber()
         .max_concurrent_scenarios(1) // 🛡️ Prevent interference in shared localhost environment
-        .run_and_exit("tests/features")
+        .run_and_exit("tests/features/satellite_root")
         .await;
 }

@@ -3,6 +3,7 @@
 //! Governance: .agent/skills/deploy_on_radxa_rock5/SKILL.md (RGA Optimization)
 
 use std::path::Path;
+use tracing::{debug, instrument};
 
 /// Abstract trait for image processing operations.
 /// Implementations: CpuImageProcessor (Tier 2/3), MockRgaProcessor (Tier 1 Sim), RgaProcessor (Tier 1 Real)
@@ -24,22 +25,26 @@ impl CpuImageProcessor {
 }
 
 impl ImageProcessor for CpuImageProcessor {
+    #[instrument(skip(self))]
     fn resize(&self, input: &Path, output: &Path, width: u32, height: u32) -> anyhow::Result<()> {
-        log::debug!(
+        debug!(
             "CPU ImageProcessor: Resizing {:?} to {}x{}",
             input,
             width,
             height
         );
-        // Placeholder: Use `image` crate for actual implementation
-        std::fs::copy(input, output)?;
+        let img = image::open(input)?;
+        let resized = img.resize(width, height, image::imageops::FilterType::Lanczos3);
+        resized.save(output)?;
         Ok(())
     }
 
+    #[instrument(skip(self))]
     fn convert(&self, input: &Path, output: &Path, format: &str) -> anyhow::Result<()> {
-        log::debug!("CPU ImageProcessor: Converting {:?} to {}", input, format);
-        // Placeholder: Use `image` crate for actual implementation
-        std::fs::copy(input, output)?;
+        debug!("CPU ImageProcessor: Converting {:?} to {}", input, format);
+        let img = image::open(input)?;
+        // Simple conversion by saving with the target extension/format
+        img.save(output)?;
         Ok(())
     }
 }

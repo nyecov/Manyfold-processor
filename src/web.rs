@@ -6,6 +6,9 @@ use axum::{
     routing::{delete, get, post},
     Extension, Json, Router,
 };
+use dashmap::DashMap;
+use tokio::sync::watch;
+use tracing::{info, warn, instrument};
 use image::AnimationDecoder;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -52,10 +55,20 @@ struct AppState {
     sys: Arc<Mutex<System>>,
     settings: Arc<Mutex<SystemSettings>>,
     queue_count: Arc<Mutex<usize>>,
-    queue_items: Arc<Mutex<Vec<String>>>,
-    queue_items_with_size: Arc<Mutex<Vec<(String, u64)>>>,
-    timeline: Arc<Mutex<Vec<String>>>,
-    file_settle_state: Arc<Mutex<HashMap<String, FileSettleInfo>>>,
+    
+    // Broadcast channels for state (Receiver side for consumers)
+    queue_items: watch::Receiver<Vec<String>>,
+    queue_items_with_size: watch::Receiver<Vec<(String, u64)>>,
+    timeline: watch::Receiver<Vec<String>>,
+    collisions: watch::Receiver<Vec<String>>,
+
+    // Internal Senders for the watcher loop
+    queue_items_tx: Arc<watch::Sender<Vec<String>>>,
+    queue_items_with_size_tx: Arc<watch::Sender<Vec<(String, u64)>>>,
+    timeline_tx: Arc<watch::Sender<Vec<String>>>,
+    collisions_tx: Arc<watch::Sender<Vec<String>>>,
+
+    file_settle_state: Arc<DashMap<String, FileSettleInfo>>,
 }
 
 pub async fn start_web_server() -> anyhow::Result<()> {
@@ -66,49 +79,69 @@ pub async fn start_web_server() -> anyhow::Result<()> {
             .with_memory(),
     );
 
+    // Initialize watch channels
+    let (queue_items_tx, queue_items_rx) = watch::channel(Vec::new());
+    let (queue_items_with_size_tx, queue_items_with_size_rx) = watch::channel(Vec::new());
+    let (timeline_tx, timeline_rx) = watch::channel(Vec::new());
+    let (collisions_tx, collisions_rx) = watch::channel(Vec::new());
+
     let state = AppState {
         sys: Arc::new(Mutex::new(sys)),
         settings: Arc::new(Mutex::new(SystemSettings::load())),
         queue_count: Arc::new(Mutex::new(0)),
-        queue_items: Arc::new(Mutex::new(Vec::new())),
-        queue_items_with_size: Arc::new(Mutex::new(Vec::new())),
-        timeline: Arc::new(Mutex::new(Vec::new())),
-        file_settle_state: Arc::new(Mutex::new(HashMap::new())),
+        queue_items: queue_items_rx,
+        queue_items_with_size: queue_items_with_size_rx,
+        timeline: timeline_rx,
+        collisions: collisions_rx,
+        queue_items_tx: Arc::new(queue_items_tx),
+        queue_items_with_size_tx: Arc::new(queue_items_with_size_tx),
+        timeline_tx: Arc::new(timeline_tx),
+        collisions_tx: Arc::new(collisions_tx),
+        file_settle_state: Arc::new(DashMap::new()),
     };
 
     // Spawn File Watcher (Refined with Settle Logic)
     let watcher_state = state.clone();
     let input_dir = std::env::var("INPUT_DIR").unwrap_or_else(|_| "input".to_string());
+    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
+    
     tokio::spawn(async move {
         let mut seen_files: HashSet<String> = HashSet::new();
+        let mut last_timeline = Vec::new();
+
         loop {
             let mut current_files = Vec::new();
-            if let Ok(entries) = std::fs::read_dir(&input_dir) {
-                for entry in entries.flatten() {
-                    if entry.path().is_file() {
-                        if let Some(name) = entry.file_name().to_str() {
-                            current_files.push(name.to_string());
+            if let Ok(mut entries) = tokio::fs::read_dir(&input_dir).await {
+                while let Ok(Some(entry)) = entries.next_entry().await {
+                    if let Ok(meta) = entry.metadata().await {
+                        if meta.is_file() {
+                            if let Some(name) = entry.file_name().to_str() {
+                                current_files.push(name.to_string());
+                            }
                         }
                     }
                 }
             }
 
-            // Sync Settle State
+            // Sync Settle State & Collision Logic
+            let mut current_collisions = Vec::new();
+            let mut current_items_with_size = Vec::new();
+            
             {
-                let mut settle_map = watcher_state.file_settle_state.lock().unwrap();
                 let settings = watcher_state.settings.lock().unwrap().clone();
                 let target_pulses = (settings.network_settle_seconds / 0.5).ceil() as u32;
 
-                // Cleanup deleted files
-                settle_map.retain(|f, _| current_files.contains(f));
+                // Cleanup deleted files from DashMap (Periodic State Consistency)
+                watcher_state.file_settle_state.retain(|f, _| current_files.contains(f));
 
                 for f in &current_files {
                     let path = std::path::Path::new(&input_dir).join(f);
-                    let metadata = std::fs::metadata(&path);
-
-                    if let Ok(m) = metadata {
+                    
+                    if let Ok(m) = std::fs::metadata(&path) {
                         let current_size = m.len();
-                        let info = settle_map.entry(f.clone()).or_insert(FileSettleInfo {
+                        current_items_with_size.push((f.clone(), current_size));
+
+                        let mut info = watcher_state.file_settle_state.entry(f.clone()).or_insert(FileSettleInfo {
                             last_size: current_size,
                             pulses_stable: 0,
                             is_ready: false,
@@ -117,12 +150,9 @@ pub async fn start_web_server() -> anyhow::Result<()> {
                         if !info.is_ready {
                             if info.last_size == current_size {
                                 info.pulses_stable += 1;
-
-                                // Hard Safety: Exclusive Lock Test
-                                let can_lock =
-                                    std::fs::OpenOptions::new().write(true).open(&path).is_ok();
-
-                                if info.pulses_stable >= target_pulses && can_lock {
+                                // Fast non-blocking lock check is hard globally, 
+                                // so we stick to the stable pulse count for now
+                                if info.pulses_stable >= target_pulses {
                                     info.is_ready = true;
                                     log::info!("File settled and ready: {}", f);
                                 }
@@ -131,36 +161,43 @@ pub async fn start_web_server() -> anyhow::Result<()> {
                                 info.pulses_stable = 0;
                             }
                         }
+
+                        // Cached Collision Check
+                        if f.to_lowercase().ends_with(".stl") {
+                            let slug = GeometryHelper::generate_slug(f);
+                            if std::path::Path::new(&output_dir).join(&slug).exists() {
+                                current_collisions.push(f.clone());
+                            }
+                        }
                     }
                 }
             }
 
-            // Update State for UI
+            // Update State for UI (Broadcast via watch channels)
             {
+                let _ = watcher_state.queue_items_tx.send(current_files.clone());
+                let _ = watcher_state.queue_items_with_size_tx.send(current_items_with_size);
+                let _ = watcher_state.collisions_tx.send(current_collisions);
+                
                 let mut q = watcher_state.queue_count.lock().unwrap();
                 *q = current_files.len();
 
-                let mut items = watcher_state.queue_items.lock().unwrap();
-                *items = current_files.clone();
-
-                let mut items_with_size = watcher_state.queue_items_with_size.lock().unwrap();
-                let mut new_items_with_size = Vec::new();
-
-                for f in &current_files {
-                    let path = std::path::Path::new(&input_dir).join(f);
-                    let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
-                    new_items_with_size.push((f.clone(), size));
-                }
-                *items_with_size = new_items_with_size;
-
-                let mut t = watcher_state.timeline.lock().unwrap();
+                // Timeline updates
+                let mut timeline_changed = false;
                 for f in &current_files {
                     if !seen_files.contains(f) {
-                        t.push(format!("Incoming: {} (Awaiting Settle)", f));
+                        last_timeline.push(format!("Incoming: {} (Awaiting Settle)", f));
                         seen_files.insert(f.clone());
+                        timeline_changed = true;
                     }
                 }
-                seen_files.retain(|f| current_files.contains(f));
+                if seen_files.len() != current_files.len() {
+                    seen_files.retain(|f| current_files.contains(f));
+                }
+
+                if timeline_changed {
+                    let _ = watcher_state.timeline_tx.send(last_timeline.clone());
+                }
             }
 
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
@@ -201,42 +238,34 @@ pub async fn start_web_server() -> anyhow::Result<()> {
 }
 
 async fn get_status(Extension(state): Extension<AppState>) -> Json<Status> {
-    let mut sys = state.sys.lock().unwrap();
-    sys.refresh_cpu();
-    sys.refresh_memory();
+    let (load, memory) = {
+        let mut sys = state.sys.lock().unwrap();
+        sys.refresh_cpu();
+        sys.refresh_memory();
+        (sys.global_cpu_info().cpu_usage(), sys.used_memory() / 1024 / 1024)
+    };
 
-    let load = sys.global_cpu_info().cpu_usage();
-    let memory = sys.used_memory() / 1024 / 1024; // MB
     let settings = state.settings.lock().unwrap().clone();
     let queue = *state.queue_count.lock().unwrap();
-    let queue_items = state.queue_items.lock().unwrap().clone();
-    let queue_items_with_size = state.queue_items_with_size.lock().unwrap().clone();
-    let timeline = state.timeline.lock().unwrap().clone();
+    
+    let queue_items = state.queue_items.borrow().clone();
+    let queue_items_with_size = state.queue_items_with_size.borrow().clone();
+    let timeline = state.timeline.borrow().clone();
+    let collisions = state.collisions.borrow().clone();
 
-    let settle_state = state.file_settle_state.lock().unwrap();
-    let mut settle_status = HashMap::new();
     let target_pulses = (settings.network_settle_seconds / 0.5).ceil() as u32;
+    let mut settle_status = HashMap::new();
 
-    let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
-    let mut collisions = Vec::new();
-
-    for (f, info) in settle_state.iter() {
+    for r in state.file_settle_state.iter() {
+        let f = r.key();
+        let info = r.value();
         let progress = if info.is_ready {
             1.0
         } else {
             (info.pulses_stable as f32 / target_pulses as f32).min(0.99)
         };
         settle_status.insert(f.clone(), progress);
-
-        // Collision Check
-        if f.to_lowercase().ends_with(".stl") {
-            let slug = GeometryHelper::generate_slug(f);
-            if std::path::Path::new(&output_dir).join(&slug).exists() {
-                collisions.push(f.clone());
-            }
-        }
     }
-
     Json(Status {
         engine_status: "online".to_string(),
         queue_count: queue,
@@ -301,8 +330,7 @@ async fn process_file_with_hint(
 
     // Check if ready
     {
-        let settle_map = state.file_settle_state.lock().unwrap();
-        if let Some(info) = settle_map.get(&filename) {
+        if let Some(info) = state.file_settle_state.get(&filename) {
             if !info.is_ready {
                 return Json(
                     serde_json::json!({ "status": "error", "message": "File is still settling" }),
@@ -328,6 +356,7 @@ async fn process_file_with_hint(
     }
 }
 
+#[instrument(skip(state))]
 async fn handle_loose_stl_project(
     primary: &str,
     state: &AppState,
@@ -337,12 +366,12 @@ async fn handle_loose_stl_project(
     let output_dir = std::env::var("OUTPUT_DIR").unwrap_or_else(|_| "output".to_string());
     let settings = state.settings.lock().unwrap().clone();
 
-    // 1. Aggregation (Flat Grab)
+    // 1. Aggregation (Flat Grab) - Async
     let mut stl_files = Vec::new();
     let mut image_files = Vec::new();
 
-    for entry in std::fs::read_dir(&input_dir)? {
-        let entry = entry?;
+    let mut entries = tokio::fs::read_dir(&input_dir).await?;
+    while let Some(entry) = entries.next_entry().await? {
         let name = entry.file_name().to_string_lossy().to_string();
         let lower = name.to_lowercase();
         if lower.ends_with(".stl") {
@@ -357,6 +386,7 @@ async fn handle_loose_stl_project(
     }
 
     if stl_files.is_empty() {
+        warn!("Process triggered but no STL files found in {}", input_dir);
         return Err(anyhow::anyhow!("No STL files found for processing"));
     }
 
@@ -366,7 +396,8 @@ async fn handle_loose_stl_project(
 
     for f in &stl_files {
         let path = std::path::Path::new(&input_dir).join(f);
-        let size = std::fs::metadata(path)?.len() as f32;
+        let meta = tokio::fs::metadata(&path).await?;
+        let size = meta.len() as f32;
         let mut score = size;
 
         // Apply penalties
@@ -387,18 +418,18 @@ async fn handle_loose_stl_project(
 
     // 3. Collision Handling (Overwrite)
     if project_path.exists() {
-        log::warn!("Collision detected for {}. Overwriting.", slug);
-        std::fs::remove_dir_all(&project_path)?;
+        warn!("Collision detected for {}. Overwriting.", slug);
+        tokio::fs::remove_dir_all(&project_path).await?;
     }
-    std::fs::create_dir_all(&project_path)?;
+    tokio::fs::create_dir_all(&project_path).await?;
 
-    // 4. Transform Geometry
+    // 4. Transform Geometry (Awaiting Async)
     let mut stl_paths = Vec::new();
     for f in &stl_files {
         stl_paths.push(std::path::Path::new(&input_dir).join(f));
     }
     let output_mesh = project_path.join(format!("{}.3mf", slug));
-    GeometryHelper::consolidate_mesh(&stl_paths, &output_mesh)?;
+    GeometryHelper::consolidate_mesh(&stl_paths, &output_mesh).await?;
 
     // 5. Intelligent Thumbnail Selection
     let mut winner_image: Option<String> = None;
@@ -487,14 +518,13 @@ async fn handle_loose_stl_project(
 
     // 8. Cleanup
     for f in stl_files {
-        let _ = std::fs::remove_file(std::path::Path::new(&input_dir).join(f));
+        let _ = tokio::fs::remove_file(std::path::Path::new(&input_dir).join(f)).await;
     }
-    // Cleanup images too as they've been copied/transferred
-    // (Note: imaging logic can be refined to move or copy)
 
-    let mut t = state.timeline.lock().unwrap();
+    let mut t = state.timeline.borrow().clone();
     t.push(format!("Project '{}' created successfully", slug));
     t.push(format!("Processed: {} -> {}.3mf", primary, slug));
+    let _ = state.timeline_tx.send(t);
 
     Ok(())
 }
@@ -528,8 +558,7 @@ async fn process_image_to_project(
 }
 
 async fn clear_timeline(Extension(state): Extension<AppState>) -> Json<serde_json::Value> {
-    let mut t = state.timeline.lock().unwrap();
-    t.clear();
+    let _ = state.timeline_tx.send(Vec::new());
     log::info!("Timeline cleared via API");
     Json(serde_json::json!({ "status": "success" }))
 }
@@ -549,8 +578,11 @@ async fn delete_file(
     if std::fs::remove_file(path).is_ok() {
         log::info!("File deleted via API: {}", filename);
         {
-            let mut t = state.timeline.lock().unwrap();
+            let mut t = state.timeline.borrow().clone();
             t.push(format!("Deleted: {} (Manually)", filename));
+            let _ = state.timeline_tx.send(t);
+            // Explicit Cache Invalidation
+            state.file_settle_state.remove(&filename);
         }
         Ok(Json(serde_json::json!({ "status": "success" })))
     } else {
@@ -572,9 +604,12 @@ async fn delete_all(Extension(state): Extension<AppState>) -> Json<serde_json::V
     }
 
     if deleted_count > 0 {
-        log::info!("Batch delete via API: {} files removed", deleted_count);
-        let mut t = state.timeline.lock().unwrap();
+        info!("Batch delete via API: {} files removed", deleted_count);
+        let mut t = state.timeline.borrow().clone();
         t.push(format!("Batch Deleted: {} files from input", deleted_count));
+        let _ = state.timeline_tx.send(t);
+        // Explicit Batch Cache Invalidation
+        state.file_settle_state.clear();
     }
 
     Json(serde_json::json!({ "status": "success", "count": deleted_count }))

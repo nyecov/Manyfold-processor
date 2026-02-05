@@ -161,7 +161,7 @@ async fn tell_satellite(world: &mut DashboardWorld, message: String) {
      let persona = if world.last_error.is_empty() { "Neutral" } else { &world.last_error };
     
     let output = Command::new(BRIDGE_EXE)
-        .args(["--persona", persona, "--prompt", &message, "--state-dir", STATE_DIR])
+        .args(["--persona", persona, "--prompt", &message, "--state-dir", STATE_DIR, "--skills-dir", "c:/Users/Furiosa/Desktop/Nomos/.agent/skills"])
         .output()
         .expect("Failed to tell satellite");
 
@@ -178,7 +178,7 @@ async fn ask_satellite(world: &mut DashboardWorld, question: String) {
     let persona = if world.last_error.is_empty() { "Neutral" } else { &world.last_error };
     
     let output = Command::new(BRIDGE_EXE)
-        .args(["--persona", persona, "--prompt", &question, "--state-dir", STATE_DIR])
+        .args(["--persona", persona, "--prompt", &question, "--state-dir", STATE_DIR, "--skills-dir", "c:/Users/Furiosa/Desktop/Nomos/.agent/skills"])
         .output()
         .expect("Failed to ask satellite");
 
@@ -212,7 +212,7 @@ async fn invoke_with_arg(world: &mut DashboardWorld, arg: String) {
 #[when(expr = "I invoke the bridge with persona {string}")]
 async fn invoke_with_persona(world: &mut DashboardWorld, persona: String) {
     let output = Command::new(BRIDGE_EXE)
-        .args(["--persona", &persona, "--prompt", "status check", "--state-dir", STATE_DIR])
+        .args(["--persona", &persona, "--prompt", "status check", "--state-dir", STATE_DIR, "--skills-dir", "c:/Users/Furiosa/Desktop/Nomos/.agent/skills"])
         .output()
         .expect("Failed to invoke with persona");
 
@@ -235,7 +235,7 @@ async fn prompt_analyze(world: &mut DashboardWorld, target: String) {
     };
 
     let output = Command::new(BRIDGE_EXE)
-        .args(["--persona", persona, "--file", final_target, "--prompt", "Analyze this file for Nomos project context.", "--state-dir", STATE_DIR])
+        .args(["--persona", persona, "--file", final_target, "--prompt", "Analyze this file for Nomos project context.", "--state-dir", STATE_DIR, "--skills-dir", "c:/Users/Furiosa/Desktop/Nomos/.agent/skills"])
         .output()
         .expect("Failed to prompt-analyze");
 
@@ -253,7 +253,7 @@ async fn send_deep_prompt(world: &mut DashboardWorld) {
     let large_prompt = "A".repeat(6000); 
     
     let output = Command::new(BRIDGE_EXE)
-        .args(["--persona", persona, "--prompt", &large_prompt, "--state-dir", STATE_DIR, "--timeout", "600"])
+        .args(["--persona", persona, "--prompt", &large_prompt, "--state-dir", STATE_DIR, "--timeout", "600", "--skills-dir", "c:/Users/Furiosa/Desktop/Nomos/.agent/skills"])
         .output()
         .expect("Failed to send deep prompt");
 
