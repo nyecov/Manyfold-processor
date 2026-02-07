@@ -10,6 +10,7 @@ pub mod when_steps;
 // Satellite Audit Steps
 pub mod satellite_steps;
 pub mod cognitive_audit_steps;
+pub mod cloud_identity_steps;
 // pub mod concurrency_steps;
 
 // API Layer Steps (Twin) - DELETED per UI-First Strategy

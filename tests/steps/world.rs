@@ -2,6 +2,7 @@ use cucumber::World;
 use headless_chrome::{Browser, LaunchOptions, Tab};
 use std::sync::Arc;
 use std::fmt;
+use std::collections::HashMap;
 
 // Wrapper to hide headless_chrome types from derive macros or provide missing traits
 pub struct BrowserWrapper {
@@ -27,6 +28,7 @@ pub struct DashboardWorld {
     // Refinement Orbit (v1.1)
     pub exclusion_registry: Vec<String>,
     pub consensus_stratum: u8,
+    pub persona_stratum_overrides: HashMap<String, u8>,
 }
 
 impl DashboardWorld {

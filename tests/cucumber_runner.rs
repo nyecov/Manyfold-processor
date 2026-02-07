@@ -14,7 +14,7 @@ pub mod support;
 // Import step modules to register them with Cucumber
 // The `#[given]`, `#[when]`, `#[then]` attributes register steps at compile time
 #[allow(unused_imports)]
-use steps::{given_steps, then_steps, when_steps, cognitive_audit_steps};
+use steps::{given_steps, then_steps, when_steps, cognitive_audit_steps, cloud_identity_steps};
 
 use steps::world::DashboardWorld;
 
